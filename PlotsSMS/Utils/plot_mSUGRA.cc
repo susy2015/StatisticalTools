@@ -33,8 +33,8 @@
 #include <sys/stat.h>
 
 static const int nRegions = 5;
-static const string  disptStrs[] = {"H_{T}>500, #slash{H}_{T}>350 GeV", "H_{T}>800, #slash{H}_{T}>200 GeV", "H_{T}>800, #slash{H}_{T}>500 GeV", "H_{T}>1000, #slash{H}_{T}>400 GeV", "H_{T}>1200, #slash{H}_{T}>200 GeV"};
-static const string regionDirs[] = {"mediumHTMHT", "highHT", "highHTMHT", "HT1000MHT400", "HT1200MHT200"};
+static const std::string  disptStrs[] = {"H_{T}>500, #slash{H}_{T}>350 GeV", "H_{T}>800, #slash{H}_{T}>200 GeV", "H_{T}>800, #slash{H}_{T}>500 GeV", "H_{T}>1000, #slash{H}_{T}>400 GeV", "H_{T}>1200, #slash{H}_{T}>200 GeV"};
+static const std::string regionDirs[] = {"mediumHTMHT", "highHT", "highHTMHT", "HT1000MHT400", "HT1200MHT200"};
 static const int     inclFlags[] = {     1,           1,          1,           0,               0       };
 
 static const int      colors[] = {kGreen, kMagenta+1, kBlue, kRed, kTeal+4};
@@ -151,7 +151,7 @@ int plot(int argc, char** argv)
    //Get limits from signal scan ---------------------------------------------------
    char filename[200], dirname[200], tmpStr[200];
 
-   vector<TheLimits *> genpoints;
+   std::vector<TheLimits *> genpoints;
    std::vector<TString> region, regionBase, dispt;
    int nTotPlots = 0;
 

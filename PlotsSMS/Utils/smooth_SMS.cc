@@ -31,10 +31,12 @@
 #include <cmath>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <iostream>
+#include <fstream>
 
 static const int nRegions = 5;
-static const string  disptStrs[] = {"H_{T}>500, #slash{H}_{T}>350 GeV", "H_{T}>800, #slash{H}_{T}>200 GeV", "H_{T}>800, #slash{H}_{T}>500 GeV", "H_{T}>1000, #slash{H}_{T}>400 GeV", "H_{T}>1200, #slash{H}_{T}>200 GeV"};
-static const string regionDirs[] = {"mediumHTMHT", "highHT", "highHTMHT", "HT1000MHT400", "HT1200MHT200"};
+static const std::string  disptStrs[] = {"H_{T}>500, #slash{H}_{T}>350 GeV", "H_{T}>800, #slash{H}_{T}>200 GeV", "H_{T}>800, #slash{H}_{T}>500 GeV", "H_{T}>1000, #slash{H}_{T}>400 GeV", "H_{T}>1200, #slash{H}_{T}>200 GeV"};
+static const std::string regionDirs[] = {"mediumHTMHT", "highHT", "highHTMHT", "HT1000MHT400", "HT1200MHT200"};
 static const int     inclFlags[] = {     1,           0,          0,           0,               0       };  
 
 static const int      colors[] = {kGreen, kMagenta+1, kBlue, kRed, kTeal+4};
@@ -128,7 +130,7 @@ int plot(int argc, char** argv)
    diagonalGraph = new TGraphErrors(nDiagBins, xPtsDiag, yPtsDiag, xErrsDiag, yErrsDiag);
    diagonalGraph->SetLineWidth(2); diagonalGraph->SetLineStyle(7);
 
-   vector<TheLimits *> genpoints;
+   std::vector<TheLimits *> genpoints;
    std::vector<TString> region, regionBase, dispt;
    int nTotPlots = 0;
 
@@ -279,16 +281,16 @@ int plot(int argc, char** argv)
    outRootFile->Write(); outRootFile->Close();
 
 // Make new data cards using the smoothed plots, take the first one
-   ifstream inlist; char line[200], resline[200];
-   inlist.open(filename, ifstream::in);
+   std::ifstream inlist; char line[200], resline[200];
+   inlist.open(filename, std::ifstream::in);
    std::cout<<"\nfilename : "<<filename<<std::endl<<std::endl;
 
    int obsRelDiffSmtCnt =0, expRelDiffSmtCnt =0;
    while(inlist.getline(line, 200)){
-      ifstream resfile;
+      std::ifstream resfile;
       char newline[200];
       sprintf(newline, "%s%s", dirname, line);
-      resfile.open(newline, ifstream::in);
+      resfile.open(newline, std::ifstream::in);
 
       int Mzero = -1, Mhalf = -1, Xsection = -1;
       double obs = -1, exp = -1, obserror = -1;
@@ -350,7 +352,7 @@ int plot(int argc, char** argv)
 
       char outnames[200];
       sprintf(outnames, "%s/%s", outDir.Data(), line);
-      ofstream outfile;
+      std::ofstream outfile;
       outfile.open(outnames);
       outfile<<"Azero = "<<Azero<<std::endl; 
       outfile<<"Mu = "<<Mu<<std::endl;

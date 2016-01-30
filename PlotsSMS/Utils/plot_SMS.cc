@@ -38,8 +38,8 @@
 #include <sys/stat.h>
 
 static const int nRegions = 5;
-static const string  disptStrs[] = {">=1b + #slash{E}_{T}>200 GeV", ">=1b + #slash{E}_{T}>350 GeV", ">=2b + #slash{E}_{T}>200 GeV", ">=2b + #slash{E}_{T}>350 GeV", "combined"};
-static const string regionDirs[] = {"baseline", "highMET", "baseline2b", "highMET2b", "combined"};
+static const std::string  disptStrs[] = {">=1b + #slash{E}_{T}>200 GeV", ">=1b + #slash{E}_{T}>350 GeV", ">=2b + #slash{E}_{T}>200 GeV", ">=2b + #slash{E}_{T}>350 GeV", "combined"};
+static const std::string regionDirs[] = {"baseline", "highMET", "baseline2b", "highMET2b", "combined"};
 static const int     inclFlags[] = {    1,          1,          1,            1,           1    };
 
 static const int      colors[] = {kGreen, kMagenta+1, kBlue, kRed, kTeal+4};
@@ -183,7 +183,7 @@ int plot(int argc, char** argv)
    diagonalGraph->SetLineWidth(2); diagonalGraph->SetLineStyle(7);
    diagonalGraph->SetName("diagonalGraph");
 
-   vector<TheLimits *> genpoints;
+   std::vector<TheLimits *> genpoints;
    std::vector<TString> region, regionBase, dispt;
    int nTotPlots = 0;
 
