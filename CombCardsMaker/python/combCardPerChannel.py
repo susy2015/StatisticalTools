@@ -49,8 +49,11 @@ def main():
    if len(options.outputdir) !=0:
       if not os.path.exists(options.outputdir): os.mkdir(options.outputdir) 
 
-   if "signal_" in options.signal: tmp_signal_key = options.signal.replace("signal_", "")
-   elif "signal" in options.signal: tmp_signal_key = options.signal.replace("signal", "")
+   splitsignalinput = options.signal.split("/")
+   stripDirSignalInput = splitsignalinput[-1]
+
+   if "signal_" in stripDirSignalInput: tmp_signal_key = stripDirSignalInput.replace("signal_", "")
+   elif "signal" in stripDirSignalInput: tmp_signal_key = stripDirSignalInput.replace("signal", "")
    tmp_signal_key = tmp_signal_key.replace(".txt", "")
    outbase_filename = "comb_" + tmp_signal_key
    print '\noutbase_filename : %s\n' % (outbase_filename)
