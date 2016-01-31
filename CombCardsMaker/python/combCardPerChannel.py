@@ -22,51 +22,13 @@ def procline(inputline):
          outline.append(each)
    return outline
 
-def main():
-   usage = "usage: %prog options"
-   version = "%prog."
-   parser = OptionParser(usage=usage,version=version)
-   parser.add_option("-l", "--lostle", action="store", dest="lostle", type="string", default="lostle.txt", help="set lostle data card name")
-   parser.add_option("-t", "--hadtau", action="store", dest="hadtau", type="string", default="hadtau.txt", help="set hadtau data card name")
-   parser.add_option("-z", "--zinv", action="store", dest="zinv", type="string", default="zinv.txt", help="set zinv data card name")
-   parser.add_option("-q", "--qcd", action="store", dest="qcd", type="string", default="qcd.txt", help="set qcd data card name")
-   parser.add_option("-r", "--ttz", action="store", dest="ttz", type="string", default="ttz.txt", help="set ttz data card name")
-   parser.add_option("-d", "--data", action="store", dest="data", type="string", default="data.txt", help="set data data card name")
-   parser.add_option("-s", "--signal", action="store", dest="signal", type="string", default="signal.txt", help="set signal data card name")
-   parser.add_option("-o", "--outputdir", action="store", dest="outputdir", type="string", default="", help="set combined card output directory")
-   
-   (options, args) = parser.parse_args()
-   
-   print 'lostle :', options.lostle
-   print 'hadtau :', options.hadtau
-   print 'zinv :', options.zinv
-   print 'qcd :', options.qcd
-   print 'ttz :', options.ttz
-   print 'data :', options.data
-   print 'signal : ', options.signal
-   print 'outputdir : ', options.outputdir
+def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_file ="hadtau.txt", zinv_file="zinv.txt", qcd_file="qcd.txt", ttz_file="qcd.txt", data_file="data.txt", signal_file ="signal.txt"):
 
-   if len(options.outputdir) !=0:
-      if not os.path.exists(options.outputdir): os.mkdir(options.outputdir) 
-
-   splitsignalinput = options.signal.split("/")
-   stripDirSignalInput = splitsignalinput[-1]
-
-   if "signal_" in stripDirSignalInput: tmp_signal_key = stripDirSignalInput.replace("signal_", "")
-   elif "signal" in stripDirSignalInput: tmp_signal_key = stripDirSignalInput.replace("signal", "")
-   tmp_signal_key = tmp_signal_key.replace(".txt", "")
-   outbase_filename = "comb_" + tmp_signal_key
+   outbase_filename = "comb_" + signal_key
    print '\noutbase_filename : %s\n' % (outbase_filename)
-   
-   lostle_file = open(options.lostle)
-   hadtau_file = open(options.hadtau)
-   zinv_file = open(options.zinv)
-   qcd_file = open(options.qcd)
-   ttz_file = open(options.ttz)
-   data_file = open(options.data)
-   signal_file = open(options.signal)
-   
+
    # parsing data file first to get basic information
+   global channels
    for line in data_file:
       splitline = procline(line)
       if splitline: 
@@ -75,8 +37,8 @@ def main():
          if splitline[0] == "channels" : channels = splitline[1]
 
    for chn in range(1, int(channels)+1):
-      if len(options.outputdir) !=0:
-         outfile_perchn = open(options.outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".txt", "w")
+      if len(outputdir) !=0:
+         outfile_perchn = open(outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".txt", "w")
       else:
          outfile_perchn = open(outbase_filename + "_ch" + str(chn) + ".txt", "w")
       outfile_perchn.write("imax 1 # number of channels\n")
@@ -497,9 +459,9 @@ def main():
       outfile_perchn.write("ttz_rate   lnN - - - - - - - %.4f/%.4f\n" % (1-ttz_syst_rate_dn_rel, 1+ttz_syst_rate_up_rel)) 
 
       outfile_perchn.close()
-      if len(options.outputdir) !=0:
-         outfile_perchn_ori = open(options.outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".txt", "r")
-         outfile_perchn_modif = open(options.outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".tmp.txt", "w")
+      if len(outputdir) !=0:
+         outfile_perchn_ori = open(outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".txt", "r")
+         outfile_perchn_modif = open(outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".tmp.txt", "w")
       else:
          outfile_perchn_ori = open(outbase_filename + "_ch" + str(chn) + ".txt", "r")
          outfile_perchn_modif = open(outbase_filename + "_ch" + str(chn) + ".tmp.txt", "w")
@@ -512,17 +474,17 @@ def main():
 
       outfile_perchn_ori.close()
       outfile_perchn_modif.close()
-      if len(options.outputdir) !=0:
-         command_line = "mv "+options.outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".tmp.txt "+options.outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".txt"
+      if len(outputdir) !=0:
+         command_line = "mv "+outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".tmp.txt "+outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".txt"
       else:
          command_line = "mv "+outbase_filename + "_ch" + str(chn) + ".tmp.txt "+outbase_filename + "_ch" + str(chn) + ".txt"
       os.system(command_line)
 
 # Additional output file for QCD
-      if len(options.outputdir) !=0:
-         qcd_outfile_perchn = open(options.outputdir + "/comb_invertDphi_"+ tmp_signal_key + "_ch" + str(chn) + ".txt", "w")
+      if len(outputdir) !=0:
+         qcd_outfile_perchn = open(outputdir + "/comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
       else:
-         qcd_outfile_perchn = open("comb_invertDphi_"+ tmp_signal_key + "_ch" + str(chn) + ".txt", "w")
+         qcd_outfile_perchn = open("comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
 
       qcd_file.seek(0, 0)
       for qcd_line in qcd_file:
@@ -566,6 +528,51 @@ def main():
       qcd_outfile_perchn.write("contamUnc_chn%d  lnN - - %.4f/%.4f\n" % (chn, 1-qcd_contam_unc_dn_rel, 1+qcd_contam_unc_up_rel))
 
       qcd_outfile_perchn.close() 
+
+
+def main():
+   usage = "usage: %prog options"
+   version = "%prog."
+   parser = OptionParser(usage=usage,version=version)
+   parser.add_option("-l", "--lostle", action="store", dest="lostle", type="string", default="lostle.txt", help="set lostle data card name")
+   parser.add_option("-t", "--hadtau", action="store", dest="hadtau", type="string", default="hadtau.txt", help="set hadtau data card name")
+   parser.add_option("-z", "--zinv", action="store", dest="zinv", type="string", default="zinv.txt", help="set zinv data card name")
+   parser.add_option("-q", "--qcd", action="store", dest="qcd", type="string", default="qcd.txt", help="set qcd data card name")
+   parser.add_option("-r", "--ttz", action="store", dest="ttz", type="string", default="ttz.txt", help="set ttz data card name")
+   parser.add_option("-d", "--data", action="store", dest="data", type="string", default="data.txt", help="set data data card name")
+   parser.add_option("-s", "--signal", action="store", dest="signal", type="string", default="signal.txt", help="set signal data card name")
+   parser.add_option("-o", "--outputdir", action="store", dest="outputdir", type="string", default="", help="set combined card output directory")
+   
+   (options, args) = parser.parse_args()
+   
+   print 'lostle :', options.lostle
+   print 'hadtau :', options.hadtau
+   print 'zinv :', options.zinv
+   print 'qcd :', options.qcd
+   print 'ttz :', options.ttz
+   print 'data :', options.data
+   print 'signal : ', options.signal
+   print 'outputdir : ', options.outputdir
+
+   if len(options.outputdir) !=0:
+      if not os.path.exists(options.outputdir): os.mkdir(options.outputdir) 
+
+   splitsignalinput = options.signal.split("/")
+   stripDirSignalInput = splitsignalinput[-1]
+
+   if "signal_" in stripDirSignalInput: tmp_signal_key = stripDirSignalInput.replace("signal_", "")
+   elif "signal" in stripDirSignalInput: tmp_signal_key = stripDirSignalInput.replace("signal", "")
+   tmp_signal_key = tmp_signal_key.replace(".txt", "")
+   
+   lostle_file = open(options.lostle)
+   hadtau_file = open(options.hadtau)
+   zinv_file = open(options.zinv)
+   qcd_file = open(options.qcd)
+   ttz_file = open(options.ttz)
+   data_file = open(options.data)
+   signal_file = open(options.signal)
+   
+   prodCardPerChn(tmp_signal_key, options.outputdir, lostle_file, hadtau_file, zinv_file, qcd_file, ttz_file, data_file, signal_file)
 
 if __name__ == "__main__":
    main()
