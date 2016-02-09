@@ -42,7 +42,7 @@ class smsPlotABS(object):
 
         self.c.SetRightMargin(0.19)
         self.c.SetTopMargin(0.08)
-        self.c.SetLeftMargin(0.15)
+        self.c.SetLeftMargin(0.14)
         self.c.SetBottomMargin(0.14)
 
         # set x axis
@@ -112,8 +112,6 @@ class smsPlotABS(object):
     def Save(self,label):
         # save the output
         self.c.SaveAs("%s.pdf" %label)
-        self.c.SaveAs("%s.png" %label)
-        self.c.SaveAs("%s.C" %label)
         
     def DrawLegend(self):
         xRange = self.model.Xmax-self.model.Xmin
@@ -208,7 +206,7 @@ class smsPlotABS(object):
         diagonal.SetFillColor(rt.kWhite)
         diagonal.SetLineColor(rt.kGray)
         diagonal.SetLineStyle(2)
-        diagonal.Draw("FSAME")
+#        diagonal.Draw("FSAME")
         diagonal.Draw("LSAME")
         self.c.diagonal = diagonal
         
@@ -238,11 +236,11 @@ class smsPlotABS(object):
         self.EXP['minus'].SetLineStyle(7)
         self.EXP['minus'].SetLineWidth(2)                        
         # DRAW LINES
+#        self.OBS['nominal'].Draw("LSAME")
+#        self.OBS['plus'].Draw("LSAME")
+#        self.OBS['minus'].Draw("LSAME")        
         self.EXP['nominal'].Draw("LSAME")
         self.EXP['plus'].Draw("LSAME")
         self.EXP['minus'].Draw("LSAME")
-        self.OBS['nominal'].Draw("LSAME")
-        self.OBS['plus'].Draw("LSAME")
-        self.OBS['minus'].Draw("LSAME")        
 
         

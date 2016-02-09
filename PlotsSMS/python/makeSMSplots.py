@@ -15,10 +15,6 @@ if __name__ == '__main__':
     # read the config file
     fileIN = inputFile(filename)
     
-#    xsecrealexpPlot = smsPlotXSECaddRealExp(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.REALEXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "")
-#    xsecrealexpPlot.Draw()
-#    xsecrealexpPlot.Save("%sXSECaddRealExp" %outputname)
-
     # classic temperature histogra
     xsecPlot = smsPlotXSEC(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "")
     xsecPlot.Draw()

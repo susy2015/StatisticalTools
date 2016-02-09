@@ -37,10 +37,10 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-static const int nRegions = 5;
-static const std::string  disptStrs[] = {">=1b + #slash{E}_{T}>200 GeV", ">=1b + #slash{E}_{T}>350 GeV", ">=2b + #slash{E}_{T}>200 GeV", ">=2b + #slash{E}_{T}>350 GeV", "combined"};
-static const std::string regionDirs[] = {"baseline", "highMET", "baseline2b", "highMET2b", "combined"};
-static const int     inclFlags[] = {    1,          1,          1,            1,           1    };
+static const int nRegions = 1;
+static const std::string  disptStrs[] = {"combined"};
+static const std::string regionDirs[] = {"combined"};
+static const int          inclFlags[] = {    1     };
 
 static const int      colors[] = {kGreen, kMagenta+1, kBlue, kRed, kTeal+4};
 
@@ -121,13 +121,13 @@ int plot(int argc, char** argv)
 
 // 25 GeV per X bin; 25 GeV per Y bin
    if( topoStr == "T2tt" ){
-      nXbins = 32; nYbins = 22;
+      nXbins = 32; nYbins = 19;
       loX = 112.5; hiX = 912.5;
-      loY = -12.5; hiY = 537.5;
+      loY = -12.5; hiY = 462.5;
  
-      nXbinsLG = 32; nYbinsLG = 22;
+      nXbinsLG = 32; nYbinsLG = 30;
       loXLG = 112.5; hiXLG = 912.5;
-      loYLG = -12.5; hiYLG = 537.5;
+      loYLG = -12.5; hiYLG = 737.5;
    }
 
    util::StyleSettings::paperNoTitle();
@@ -177,11 +177,7 @@ int plot(int argc, char** argv)
    for(int ib=0; ib<nDiagBins; ib++){
       xPtsDiag[ib] = loDiagRange + ib*widthBin; xErrsDiag[ib] = 0.0;
 //      yPtsDiag[ib] = loDiagRange + (ib+1)*widthBin; yErrsDiag[ib] = 0.0;
-      if( topoStr == "T2tt" ){
-         yPtsDiag[ib] = loDiagRange + ib*widthBin - 175; yErrsDiag[ib] = 0.0;
-      }else{
-         yPtsDiag[ib] = loDiagRange + ib*widthBin; yErrsDiag[ib] = 0.0;
-      }
+      yPtsDiag[ib] = loDiagRange + ib*widthBin; yErrsDiag[ib] = 0.0;
    }
    diagonalGraph = new TGraphErrors(nDiagBins, xPtsDiag, yPtsDiag, xErrsDiag, yErrsDiag);
    diagonalGraph->SetLineWidth(2); diagonalGraph->SetLineStyle(7);
@@ -203,7 +199,6 @@ int plot(int argc, char** argv)
          dispt.push_back(tmpStr);
       }
    }
-//   nTotPlots++; region.push_back("combined_"); regionBase.push_back("combined"); dispt.push_back("combined");
 
    int idxCnt =-1;
    for(int ir=0; ir<nRegions; ir++){
@@ -211,11 +206,6 @@ int plot(int argc, char** argv)
          sprintf(dirname, "%s_plots_%s/", regionDirs[ir].c_str(), topoStr.Data());
          sprintf(filename, "%s_plots_%s/filelist.txt", regionDirs[ir].c_str(), topoStr.Data());
          idxCnt++; genpoints[idxCnt]->Fill(filename, dirname);
-//         genpoints[idxCnt]->FillEmptyPointsByInterpolationInM0M12();
-//Get SUSY masses and x-sections from generator scan ----------------------------
-//and match them to the signal scan
-//         genpoints[idxCnt]->FillGeneratorMasses("GenScan_tb10.dat");
-//         genpoints[idxCnt]->match();
       }
    }
 
@@ -492,7 +482,7 @@ int plot(int argc, char** argv)
 
          bool doSmooth = true;
 
-         int radiusToSmooth = 10;
+         int radiusToSmooth = 18;
 //         int radiusToSmooth = 6;
          int radiusToSmoothTH2 = 4;
          bool dointerpolation = true;
@@ -563,11 +553,9 @@ int plot(int argc, char** argv)
          }
          int nPts_obsExclOneTimesxSecProspino = (int)xPts_obsExclOneTimesxSecProspino.size();
          TGraph *obsExclOneTimesxSecProspino = new TGraph(nPts_obsExclOneTimesxSecProspino, &xPts_obsExclOneTimesxSecProspino[0], &yPts_obsExclOneTimesxSecProspino[0]);
-/*
          if( topoStr == "T2" || topoStr == "T2qq" ){ obsExclOneTimesxSecProspino->RemovePoint(0); obsExclOneTimesxSecProspino->RemovePoint(0); }
          if( topoStr == "T5ZZInc" ){ obsExclOneTimesxSecProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ obsExclOneTimesxSecProspino->RemovePoint(0); obsExclOneTimesxSecProspino->RemovePoint(0); }
-*/
 
          obsExclOneTimesxSecProspinoTestComb = (TH2F*) obsExclOneTimesxSecProspinoTest->Clone("obsExclOneTimesxSecTestComb");
 
@@ -658,11 +646,9 @@ int plot(int argc, char** argv)
          }
          int nPts_obsExclPlusSysErrxSecProspino = (int)xPts_obsExclPlusSysErrxSecProspino.size();
          TGraph *obsExclPlusSysErrxSecProspino = new TGraph(nPts_obsExclPlusSysErrxSecProspino, &xPts_obsExclPlusSysErrxSecProspino[0], &yPts_obsExclPlusSysErrxSecProspino[0]);
-/*
          if( topoStr == "T2" || topoStr == "T2qq" ){ obsExclPlusSysErrxSecProspino->RemovePoint(0); }
          if( topoStr == "T5ZZInc" ){ obsExclPlusSysErrxSecProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ obsExclPlusSysErrxSecProspino->RemovePoint(0); obsExclPlusSysErrxSecProspino->RemovePoint(0); }
-*/
 
 
          TH2F * obsExclMinusSysErrxSecProspinoSmooth = new TH2F("obsExclMinusSysErrxSecProspinoSmooth", "", nXbins, loX, hiX, nYbins, loY, hiY);
@@ -718,12 +704,9 @@ int plot(int argc, char** argv)
          int nPts_obsExclMinusSysErrxSecProspino = (int)xPts_obsExclMinusSysErrxSecProspino.size();
          TGraph *obsExclMinusSysErrxSecProspino = new TGraph(nPts_obsExclMinusSysErrxSecProspino, &xPts_obsExclMinusSysErrxSecProspino[0], &yPts_obsExclMinusSysErrxSecProspino[0]);
 
-/*
          if( topoStr == "T5ZZInc" ){ obsExclMinusSysErrxSecProspino->RemovePoint(0); obsExclMinusSysErrxSecProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ obsExclMinusSysErrxSecProspino->RemovePoint(0); obsExclMinusSysErrxSecProspino->RemovePoint(0); }
-*/
 
-/*
          if( T2ttBR !=0 ){
             obsExclOneTimesxSecProspino->RemovePoint(0); obsExclPlusSysErrxSecProspino->RemovePoint(0); obsExclMinusSysErrxSecProspino->RemovePoint(0);
          }else if(keyStr == "comb" || keyStr == "sbottom" ){
@@ -738,7 +721,6 @@ int plot(int argc, char** argv)
             obsExclPlusSysErrxSecProspino->GetPoint(0, tmpxgr, tmpygr); obsExclPlusSysErrxSecProspino->SetPoint(obsExclPlusSysErrxSecProspino->GetN(), tmpxgr, tmpygr);
             obsExclMinusSysErrxSecProspino->GetPoint(0, tmpxgr, tmpygr); obsExclMinusSysErrxSecProspino->SetPoint(obsExclMinusSysErrxSecProspino->GetN(), tmpxgr, tmpygr);
          }
-*/
 
          obsHistName = region[i]+"obsExclOneTimesProspino"; obsExclOneTimesProspinoVec[i] = (TGraph*) obsExclOneTimesxSecProspino->Clone(obsHistName.Data());
          obsHistName = region[i]+"obsExclThreeTimesProspino"; obsExclThreeTimesProspinoVec[i] = (TGraph*) obsExclThreeTimesxSecProspino->Clone(obsHistName.Data());
@@ -832,7 +814,7 @@ int plot(int argc, char** argv)
 */
          TGraph * expExclOneTimesxSecProspinoTMP = plotTools[i]->GetContour(expExclOneTimesxSecProspinoTest, 3, 1, !doMyFill);
          expExclOneTimesxSecProspinoTMP->GetPoint(expExclOneTimesxSecProspinoTMP->GetN()-1, tmpxgr, tmpygr);
-//         expExclOneTimesxSecProspinoTMP->SetPoint(expExclOneTimesxSecProspinoTMP->GetN(), tmpxgr, 0);
+         expExclOneTimesxSecProspinoTMP->SetPoint(expExclOneTimesxSecProspinoTMP->GetN(), tmpxgr, 0);
          if( doSmooth ) Smooth(expExclOneTimesxSecProspinoTMP, radiusToSmooth);
 
          std::vector<double> xPts_expExclOneTimesxSecProspino, yPts_expExclOneTimesxSecProspino;
@@ -850,11 +832,9 @@ int plot(int argc, char** argv)
          }
          int nPts_expExclOneTimesxSecProspino = (int)xPts_expExclOneTimesxSecProspino.size();
          TGraph *expExclOneTimesxSecProspino = new TGraph(nPts_expExclOneTimesxSecProspino, &xPts_expExclOneTimesxSecProspino[0], &yPts_expExclOneTimesxSecProspino[0]);
-/*
          if( topoStr == "T1" || topoStr == "T1qqqq" ){ expExclOneTimesxSecProspino->RemovePoint(0); }
          if( topoStr == "T2" || topoStr == "T2qq" ){ expExclOneTimesxSecProspino->RemovePoint(0); expExclOneTimesxSecProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ expExclOneTimesxSecProspino->RemovePoint(0); expExclOneTimesxSecProspino->RemovePoint(0); }
-*/
 
          expExclOneTimesxSecProspinoTestComb = (TH2F*) expExclOneTimesxSecProspinoTest->Clone("expExclOneTimesxSecTestComb");
 
@@ -889,7 +869,7 @@ int plot(int argc, char** argv)
          
          TGraph * expExclPlusOneSigmaProspinoTMP = plotTools[i]->GetContour(expExclPlusOneSigmaProspinoTest, 3, 1, !doMyFill);
          expExclPlusOneSigmaProspinoTMP->GetPoint(expExclPlusOneSigmaProspinoTMP->GetN()-1, tmpxgr, tmpygr);
-//         expExclPlusOneSigmaProspinoTMP->SetPoint(expExclPlusOneSigmaProspinoTMP->GetN(), tmpxgr, 0);
+         expExclPlusOneSigmaProspinoTMP->SetPoint(expExclPlusOneSigmaProspinoTMP->GetN(), tmpxgr, 0);
          if( doSmooth ) Smooth(expExclPlusOneSigmaProspinoTMP, radiusToSmooth+2);
 
          std::vector<double> xPts_expExclPlusOneSigmaProspino, yPts_expExclPlusOneSigmaProspino;
@@ -905,12 +885,8 @@ int plot(int argc, char** argv)
          }
          int nPts_expExclPlusOneSigmaProspino = (int)xPts_expExclPlusOneSigmaProspino.size();
          TGraph *expExclPlusOneSigmaProspino = new TGraph(nPts_expExclPlusOneSigmaProspino, &xPts_expExclPlusOneSigmaProspino[0], &yPts_expExclPlusOneSigmaProspino[0]);
-/*
          if( topoStr == "T1" || topoStr == "T1qqqq" ){ expExclPlusOneSigmaProspino->RemovePoint(0); expExclPlusOneSigmaProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ expExclPlusOneSigmaProspino->RemovePoint(0); expExclPlusOneSigmaProspino->RemovePoint(0); }
-*/
-         expExclPlusOneSigmaProspinoTest->Draw("colz");
-         c1->SaveAs(outDir + "/" +topoStr +"_" + region[i]+"_ExpPlusOneSigma_TestContour.pdf");
 
 // -1 Sigma
          TH2F * expExclMinusOneSigmaProspinoSmooth = new TH2F("expExclMinusOneSigmaProspinoSmooth", "", nXbins, loX, hiX, nYbins, loY, hiY);
@@ -940,7 +916,7 @@ int plot(int argc, char** argv)
                   
          TGraph * expExclMinusOneSigmaProspinoTMP = plotTools[i]->GetContour(expExclMinusOneSigmaProspinoTest, 3, 1, !doMyFill);
          expExclMinusOneSigmaProspinoTMP->GetPoint(expExclMinusOneSigmaProspinoTMP->GetN()-1, tmpxgr, tmpygr);
-//         expExclMinusOneSigmaProspinoTMP->SetPoint(expExclMinusOneSigmaProspinoTMP->GetN(), tmpxgr, 0);
+         expExclMinusOneSigmaProspinoTMP->SetPoint(expExclMinusOneSigmaProspinoTMP->GetN(), tmpxgr, 0);
          if( doSmooth ) Smooth(expExclMinusOneSigmaProspinoTMP, radiusToSmooth+10);
 
          std::vector<double> xPts_expExclMinusOneSigmaProspino, yPts_expExclMinusOneSigmaProspino;
@@ -956,14 +932,9 @@ int plot(int argc, char** argv)
          }
          int nPts_expExclMinusOneSigmaProspino = (int)xPts_expExclMinusOneSigmaProspino.size();
          TGraph *expExclMinusOneSigmaProspino = new TGraph(nPts_expExclMinusOneSigmaProspino, &xPts_expExclMinusOneSigmaProspino[0], &yPts_expExclMinusOneSigmaProspino[0]);
-/*
          if( topoStr == "T2" || topoStr == "T2qq" ){ expExclMinusOneSigmaProspino->RemovePoint(0); expExclMinusOneSigmaProspino->RemovePoint(0); }
          if( topoStr == "T5ZZInc" ){ expExclMinusOneSigmaProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ expExclMinusOneSigmaProspino->RemovePoint(0); expExclMinusOneSigmaProspino->RemovePoint(0); }
-*/
-
-         expExclMinusOneSigmaProspinoTest->Draw("colz");
-         c1->SaveAs(outDir + "/" +topoStr +"_" + region[i]+"_ExpMinusOneSigma_TestContour.pdf");
 
 
          TH2F * expExclThreeTimesxSecProspinoTest = new TH2F("expExclThreeTimesxSecProspinoTest", "", nXbins, loX, hiX, nYbins, loY, hiY);
@@ -984,7 +955,7 @@ int plot(int argc, char** argv)
          }
          int nPts_expExclThreeTimesxSecProspino = (int)xPts_expExclThreeTimesxSecProspino.size();
          TGraph *expExclThreeTimesxSecProspino = new TGraph(nPts_expExclThreeTimesxSecProspino, &xPts_expExclThreeTimesxSecProspino[0], &yPts_expExclThreeTimesxSecProspino[0]);
-//         if( topoStr == "T2" || topoStr == "T2qq" ){ expExclThreeTimesxSecProspino->RemovePoint(0); }
+         if( topoStr == "T2" || topoStr == "T2qq" ){ expExclThreeTimesxSecProspino->RemovePoint(0); }
 
          TH2F * expExclOneThirdxSecProspinoTest = new TH2F("expExclOneThirdxSecProspinoTest", "", nXbins, loX, hiX, nYbins, loY, hiY);
          plotTools[i]->Area(expExclOneThirdxSecProspinoTest, Mzero, Mhalf, NLOExpxSecCL, xSecProspino, 1./3.0, doMyFill, xBinLargery);
@@ -1005,9 +976,8 @@ int plot(int argc, char** argv)
          int nPts_expExclOneThirdxSecProspino = (int)xPts_expExclOneThirdxSecProspino.size();
          TGraph *expExclOneThirdxSecProspino = new TGraph(nPts_expExclOneThirdxSecProspino, &xPts_expExclOneThirdxSecProspino[0], &yPts_expExclOneThirdxSecProspino[0]);
 
-//         expExclOneTimesxSecProspino->RemovePoint(0); expExclPlusOneSigmaProspino->RemovePoint(0); expExclMinusOneSigmaProspino->RemovePoint(0);
+         expExclOneTimesxSecProspino->RemovePoint(0); expExclPlusOneSigmaProspino->RemovePoint(0); expExclMinusOneSigmaProspino->RemovePoint(0);
 
-/*
          if( T2ttBR ==0 && keyStr == "stop" ){
             for(int ir=0; ir<10; ir++){ expExclOneTimesxSecProspino->RemovePoint(0); }
             for(int ir=0; ir<5; ir++){ expExclPlusOneSigmaProspino->RemovePoint(0); }
@@ -1022,7 +992,6 @@ int plot(int argc, char** argv)
             expExclPlusOneSigmaProspino->GetPoint(0, tmpxgr, tmpygr); expExclPlusOneSigmaProspino->SetPoint(expExclPlusOneSigmaProspino->GetN()-1, tmpxgr, tmpygr);
             expExclMinusOneSigmaProspino->GetPoint(0, tmpxgr, tmpygr); expExclMinusOneSigmaProspino->SetPoint(expExclMinusOneSigmaProspino->GetN()-1, tmpxgr, tmpygr);
          }
-*/
 
          expHistName = region[i]+"expExclOneTimesProspino"; expExclOneTimesProspinoVec[i] = (TGraph*) expExclOneTimesxSecProspino->Clone(expHistName.Data());
          expHistName = region[i]+"expExclThreeTimesProspino"; expExclThreeTimesProspinoVec[i] = (TGraph*) expExclThreeTimesxSecProspino->Clone(expHistName.Data());
