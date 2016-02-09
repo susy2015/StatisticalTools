@@ -1,0 +1,2 @@
+./plot_SMS T2tt 1.00
+python python/makeSMSplots.py T2tt_SUS_combined.cfg BR_1.00_Stop_Only
