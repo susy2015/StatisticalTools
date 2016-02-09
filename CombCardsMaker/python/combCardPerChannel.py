@@ -37,6 +37,8 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
          if splitline[0] == "channels" : channels = splitline[1]
 
    for chn in range(1, int(channels)+1):
+      if chn == 22 or chn == 23 or chn == 24 or chn == 41 or chn == 42 or chn == 43 or chn == 44 or chn == 45: continue
+#      if chn == 43 or chn == 44 or chn == 45: continue
       if len(outputdir) !=0:
          outfile_perchn = open(outputdir + "/" + outbase_filename + "_ch" + str(chn) + ".txt", "w")
       else:
@@ -192,13 +194,97 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
       signal_file.seek(0, 0)
       for signal_line in signal_file:
          signal_splitline = procline(signal_line)
-         if signal_splitline and signal_splitline[0] == "syst_unc_up":
-            signal_syst_up_rel = float(signal_splitline[chn])
-         if signal_splitline and signal_splitline[0] == "syst_unc_dn":
-            signal_syst_dn_rel = float(signal_splitline[chn])
-      if signal_syst_dn_rel ==1: signal_syst_dn_rel -= 0.001
-      outfile_perchn.write("signal_syst  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_dn_rel, 1+signal_syst_up_rel))
+         if signal_splitline and signal_splitline[0] == "lumi_unc_up":
+            signal_syst_lumi_up_rel = float(signal_splitline[chn])
+         if signal_splitline and signal_splitline[0] == "lumi_unc_dn":
+            signal_syst_lumi_dn_rel = float(signal_splitline[chn])
 
+         if signal_splitline and signal_splitline[0] == "bTagSF_up":
+            signal_syst_bTagSF_up_rel = float(signal_splitline[chn])
+         if signal_splitline and signal_splitline[0] == "bTagSF_dn":
+            signal_syst_bTagSF_dn_rel = float(signal_splitline[chn])
+         
+         if signal_splitline and signal_splitline[0] == "mistagSF_up":
+            signal_syst_mistagSF_up_rel = float(signal_splitline[chn])
+         if signal_splitline and signal_splitline[0] == "mistagSF_dn":
+            signal_syst_mistagSF_dn_rel = float(signal_splitline[chn])
+        
+         if signal_splitline and signal_splitline[0] == "scaleUnc_up":
+            signal_syst_scaleUnc_up_rel = float(signal_splitline[chn]) 
+         if signal_splitline and signal_splitline[0] == "scaleUnc_dn":
+            signal_syst_scaleUnc_dn_rel = float(signal_splitline[chn]) 
+
+         if signal_splitline and signal_splitline[0] == "isrUnc_up":
+            signal_syst_isrUnc_up_rel = float(signal_splitline[chn])
+         if signal_splitline and signal_splitline[0] == "isrUnc_dn":
+            signal_syst_isrUnc_dn_rel = float(signal_splitline[chn])
+
+         if signal_splitline and signal_splitline[0] == "metMag_up":
+            signal_syst_metMag_up_rel = float(signal_splitline[chn])
+         if signal_splitline and signal_splitline[0] == "metMag_dn":
+            signal_syst_metMag_dn_rel = float(signal_splitline[chn])
+
+         if signal_splitline and signal_splitline[0] == "jetJEC_up":
+            signal_syst_jetJEC_up_rel = float(signal_splitline[chn])
+         if signal_splitline and signal_splitline[0] == "jetJEC_dn":
+            signal_syst_jetJEC_dn_rel = float(signal_splitline[chn])
+
+# Ignore metPhi since it's so small
+#         if signal_splitline and signal_splitline[0] == "metPhi_up":
+#            signal_syst_metPhi_up_rel = float(signal_splitline[chn])
+#         if signal_splitline and signal_splitline[0] == "metPhi_dn":
+#            signal_syst_metPhi_dn_rel = float(signal_splitline[chn])
+
+#         if signal_splitline and signal_splitline[0] == "syst_unc_up":
+#            signal_syst_up_rel = float(signal_splitline[chn])
+#         if signal_splitline and signal_splitline[0] == "syst_unc_dn":
+#            signal_syst_dn_rel = float(signal_splitline[chn])
+
+# Symmetrize the scale unc using the envelope the absolute values of both up and dn 
+      if abs(signal_syst_scaleUnc_up_rel) > abs(signal_syst_scaleUnc_dn_rel):
+         signal_syst_scaleUnc_up_rel = abs(signal_syst_scaleUnc_up_rel)
+         signal_syst_scaleUnc_dn_rel = abs(signal_syst_scaleUnc_up_rel) 
+      else:
+         signal_syst_scaleUnc_up_rel = abs(signal_syst_scaleUnc_dn_rel)
+         signal_syst_scaleUnc_dn_rel = abs(signal_syst_scaleUnc_dn_rel) 
+         
+# Symmetrize the metMag unc using the envelope the absolute values of both up and dn 
+      if abs(signal_syst_metMag_up_rel) > abs(signal_syst_metMag_dn_rel):
+         signal_syst_metMag_up_rel = abs(signal_syst_metMag_up_rel)
+         signal_syst_metMag_dn_rel = abs(signal_syst_metMag_up_rel) 
+      else:
+         signal_syst_metMag_up_rel = abs(signal_syst_metMag_dn_rel)
+         signal_syst_metMag_dn_rel = abs(signal_syst_metMag_dn_rel) 
+         
+# Symmetrize the jetJEC unc using the envelope the absolute values of both up and dn 
+      if abs(signal_syst_jetJEC_up_rel) > abs(signal_syst_jetJEC_dn_rel):
+         signal_syst_jetJEC_up_rel = abs(signal_syst_jetJEC_up_rel)
+         signal_syst_jetJEC_dn_rel = abs(signal_syst_jetJEC_up_rel) 
+      else:
+         signal_syst_jetJEC_up_rel = abs(signal_syst_jetJEC_dn_rel)
+         signal_syst_jetJEC_dn_rel = abs(signal_syst_jetJEC_dn_rel) 
+
+      if signal_syst_lumi_dn_rel ==1: signal_syst_lumi_dn_rel -= 0.001
+      if signal_syst_scaleUnc_dn_rel ==1: signal_syst_scaleUnc_dn_rel -= 0.001
+      if signal_syst_isrUnc_dn_rel ==1: signal_syst_isrUnc_dn_rel -= 0.001
+      if signal_syst_bTagSF_dn_rel ==1: signal_syst_bTagSF_dn_rel -= 0.001
+      if signal_syst_mistagSF_dn_rel ==1: signal_syst_mistagSF_dn_rel -= 0.001
+      if signal_syst_metMag_dn_rel ==1: signal_syst_metMag_dn_rel -= 0.001
+      if signal_syst_jetJEC_dn_rel ==1: signal_syst_jetJEC_dn_rel -= 0.001
+      if signal_cs_event < 5:
+         signal_syst_jetJEC_up_rel = 0.05
+         signal_syst_jetJEC_dn_rel = 0.05
+         signal_syst_metMag_up_rel = 0.05
+         signal_syst_metMag_dn_rel = 0.05
+#      outfile_perchn.write("signal_syst  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_dn_rel, 1+signal_syst_up_rel))
+      outfile_perchn.write("signal_lumi  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_lumi_dn_rel, 1+signal_syst_lumi_up_rel) )
+      outfile_perchn.write("signal_scaleUnc  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_scaleUnc_dn_rel, 1+signal_syst_scaleUnc_up_rel) )
+      outfile_perchn.write("signal_isrUnc  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_isrUnc_dn_rel, 1+signal_syst_isrUnc_up_rel) )
+      outfile_perchn.write("signal_bTagSF  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_bTagSF_dn_rel, 1+signal_syst_bTagSF_up_rel) )
+      outfile_perchn.write("signal_mistagSF  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_mistagSF_dn_rel, 1+signal_syst_mistagSF_up_rel) )
+      outfile_perchn.write("signal_metMag  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_metMag_dn_rel, 1+signal_syst_metMag_up_rel) )
+      outfile_perchn.write("signal_jetJEC  lnN %.4f/%.4f - - - - - - -\n" % (1-signal_syst_jetJEC_dn_rel, 1+signal_syst_jetJEC_up_rel) )
+         
 # lostle 
       lostle_file.seek(0, 0)
       for lostle_line in lostle_file:

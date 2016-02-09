@@ -8,7 +8,6 @@ class sms():
         if modelname.find("T1qqqq") != -1: self.T1qqqq()
         if modelname.find("T2qq")   != -1: self.T2qq()
         if modelname.find("T2tt")   != -1: self.T2tt()
-        if modelname.find("T2tb")   != -1: self.T2tb()
 
 
     def T1tttt(self):
@@ -90,32 +89,16 @@ class sms():
         # decay chain
         self.label= "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}";
         # plot boundary. The top 1/4 of the y axis is taken by the legend
-        self.Xmin = 187.5
-        self.Xmax = 787.5
+#        self.Xmin = 187.5
+        self.Xmin = 112.5
+        self.Xmax = 912.5
         self.Ymin = 12.5
-        self.Ymax = 462.5
+        self.Ymax = 537.5
         # produce sparticle
-        self.sParticle = "m_{#tilde{t}} (GeV)"
+        self.sParticle = "m_{stop} (GeV)"
         # LSP
-        self.LSP = "m_{#tilde{#chi}^{0}_{1}} (GeV)"
+        self.LSP = "m_{LSP} (GeV)"
         # diagonal position: mLSP = mgluino - 2mtop
+        mtop = 175
         self.diagX = array('d',[0,20000])
-        self.diagY = array('d',[0, 20000])
-
-    def T2tb(self):
-        # model name
-        self.modelname = "T2tb"
-        # decay chain
-        self.label= "pp #rightarrow #tilde{t} #tilde{t}; #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}, #tilde{t} #rightarrow b #tilde{#chi}^{+}_{1}";
-        # plot boundary. The top 1/4 of the y axis is taken by the legend
-        self.Xmin = 187.5
-        self.Xmax = 787.5
-        self.Ymin = 12.5
-        self.Ymax = 462.5
-        # produce sparticle
-        self.sParticle = "m_{#tilde{t}} (GeV)"
-        # LSP
-        self.LSP = "m_{#tilde{#chi}^{0}_{1}} (GeV)"
-        # diagonal position: mLSP = mgluino - 2mtop
-        self.diagX = array('d',[0,20000])
-        self.diagY = array('d',[0, 20000])
+        self.diagY = array('d',[-mtop, 20000-mtop])

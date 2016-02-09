@@ -37,7 +37,7 @@
 
 using namespace std;
 
-void transferxSecFromTextToROOT(std::string inputStr="xSecFromSanjay_T1.txt"){
+void transferxSecFromTextToROOT(std::string inputStr="xSec_T3G.txt"){
 
    ifstream fin(inputStr.c_str());
    char line[200];
@@ -53,7 +53,7 @@ void transferxSecFromTextToROOT(std::string inputStr="xSecFromSanjay_T1.txt"){
       TObjArray *vlist = lineT.Tokenize(" ");
       int nEntries = vlist->GetEntries();
       int mMom;
-      double xSec, xSecRelErr;
+      double xSec =0, xSecRelErr =0;
       for(int ie=0; ie<nEntries; ie++){
          TObjString* perObj = dynamic_cast<TObjString*>(vlist->At(ie));
          TString perStr = perObj->GetString();
