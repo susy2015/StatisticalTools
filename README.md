@@ -7,43 +7,19 @@
 
 ] cd StatisticalTools/CombCardsMaker/python
 
-] make the several links:
+] run an example of T2tt
 
-
-ln -s datacard_v3/DataCard_QCD_v4.txt qcd.txt
-
-ln -s datacard_v3/data.txt .
-
-ln -s datacard_v3/ttz.txt .
-
-ln -s datacard_v3/HadTau_card_RelSys.txt hadtau.txt
-
-ln -s datacard_v3/zinv_datacard.txt zinv.txt
-
-ln -s datacard_v3/LL_card.txt lostle.txt
-
-ln -s signalScan_prod/v3 signalScan
-
-ln -s ../../PlotsSMS/Utils/xSec_T3G.root xSec_T3G.root
-
-] submit the jobs (all the jobs are done in the batchCombJobs.py. We'll get final results to be used to draw the limits.
-
-./batchCombJobs.py -s signalScan -o prod
+  cd batch_T2tt_37Bins/flatNtp_v6/
+  ln -s /uscms_data/d3/lhx/tasks/recipes/prepare2015/OTHERS/dev_for_v4_7415/src/SusyAnaTools/Tools/condor/signalScan/prod_T2tt_37Bins/v3_add_data_vs_mc_tagger_unc signalCards
+  ./batchCombJobs.py -s signalCards -o prod >& log_prod.lg&
+  ./onlyMakeCards.py -s signalCards
 
 ==> To draw the limit plots
 
 cd PlotsSMS/workdir/
 
-ln -s ../Utils .
+make -j9
 
-ln -s ../python .
-
-rm ori_combined_plots_T2tt
-
-ln -s ../../CombCardsMaker/python/cards_for_plotting ori_combined_plots_T2tt
-
-ln -s Utils/* .
-
-make
+cd T2tt_37Bins/flatNtp_v6/
 
 source batch.txt
