@@ -1,0 +1,1 @@
+../datacard_v7_flatNtp_v6_45SRs/rare.txt

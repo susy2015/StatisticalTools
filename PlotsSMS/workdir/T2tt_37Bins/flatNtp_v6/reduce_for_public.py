@@ -1,0 +1,1 @@
+../../../../CombCardsMaker/python/reduce_for_public.py

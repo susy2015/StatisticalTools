@@ -1,0 +1,4 @@
+./plot_SMS T1tttt 1.00
+python python/makeSMSplots.py T1tttt_SUS_combined.cfg BR_1.00_Gluino_Only
+python python/makeBinaryplots.py T1tttt_SUS_combined_Binary_EXP.cfg BR_1.00_Stop_Only
+python python/makeBinaryplots.py T1tttt_SUS_combined_Binary_OBS.cfg BR_1.00_Stop_Only
