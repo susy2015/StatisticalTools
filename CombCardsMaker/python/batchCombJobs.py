@@ -18,9 +18,11 @@ def main():
    parser.add_option("-z", "--zinv", action="store", dest="zinv", type="string", default="zinv.txt", help="set zinv data card name")
    parser.add_option("-q", "--qcd", action="store", dest="qcd", type="string", default="qcd.txt", help="set qcd data card name")
    parser.add_option("-r", "--ttz", action="store", dest="ttz", type="string", default="ttz.txt", help="set ttz data card name")
+   parser.add_option("-b", "--rare", action="store", dest="rare", type="string", default="rare.txt", help="set rare data card name")
    parser.add_option("-d", "--data", action="store", dest="data", type="string", default="data.txt", help="set data data card name")
    parser.add_option("-o", "--outputdir", action="store", dest="outputdir", type="string", default="", help="set combined card output directory")
    parser.add_option("-n", "--runlimit", action="store", dest="runlimit", type="string", default="yes", help="set run limit or not")
+   parser.add_option("-m", "--model", action="store", dest="model", type="string", default="T2tt", help="set SMS model type")
    
    (options, args) = parser.parse_args()
    
@@ -29,6 +31,7 @@ def main():
    print 'zinv :', options.zinv
    print 'qcd :', options.qcd
    print 'ttz :', options.ttz
+   print 'rare :', options.rare
    print 'data :', options.data
    print 'signaldir : ', options.signaldir
    print 'runlimit : ', options.runlimit
@@ -44,6 +47,7 @@ def main():
    zinv_file = open(options.zinv)
    qcd_file = open(options.qcd)
    ttz_file = open(options.ttz)
+   rare_file = open(options.rare)
    data_file = open(options.data)
    
    tarfilename = options.outputdir + ".tgz"
@@ -92,16 +96,19 @@ notify_user = ${LOGNAME}@FNAL.GOV
 
          signal_file = open(full_signal_name)
 # Core function to produce the cards
-         combCard.prodCardPerChn(tmp_signal_key, outputdir, lostle_file, hadtau_file, zinv_file, qcd_file, ttz_file, data_file, signal_file)
+         combCard.prodCardPerChn(tmp_signal_key, outputdir, lostle_file, hadtau_file, zinv_file, qcd_file, ttz_file, rare_file, data_file, signal_file)
          signal_file.close()
 
 # Making a combined card
+         rm_comb_cards_command = "rm "
          make_allComb_command = "combineCards.py "
          for card_name in os.listdir(outputdir):
             if not ("comb" in card_name): continue
             make_allComb_command += (outputdir + "/" + card_name + " ")
+            rm_comb_cards_command += (outputdir + "/" + card_name + " ")
          make_allComb_command += (" > " + outputdir + "/allComb_"+tmp_signal_name)
          os.system(make_allComb_command)
+         os.system(rm_comb_cards_command)
 
       allComb_file_dir = outputdir + "/" + "allComb_" + tmp_signal_name
       allComb_run_output_filename = "log_allComb_" + tmp_signal_name + ".lg"
@@ -112,11 +119,13 @@ notify_user = ${LOGNAME}@FNAL.GOV
    zinv_file.close()
    qcd_file.close()
    ttz_file.close()
+   rare_file.close()
    data_file.close()
 
 # Preparing tarred cards, executable and condor configuration files for limit jobs
    if options.runlimit == "yes":
       os.system("tar -czvf "+tarfilename+" "+options.outputdir + "/*/allComb_*.txt")
+      os.system("rm -fr "+options.outputdir)
 
    exeLine = """#!/bin/bash
 
@@ -154,7 +163,7 @@ combine -M Asymptotic $1 > $3
       tmp_condor_file = open("tmp_condor_check_output.txt")
       cnt_runjobs =0
       for condor_line in tmp_condor_file:
-         if "goScan.sh" in condor_line: cnt_runjobs += 1
+         if "goScan.sh" in condor_line and "allComb" in condor_line : cnt_runjobs += 1
       print "current jobs in queue: %d" % (cnt_runjobs)
       if cnt_runjobs ==0: break;
       time.sleep(60)
@@ -162,6 +171,7 @@ combine -M Asymptotic $1 > $3
 # Removing intermediate files
    os.system("rm tmp_condor_check_output.txt")
    os.system("rm higgsCombineTest.Asymptotic.mH120.root")
+   os.system("rm roostats*.root")
 
 # Parsing the output files to make new files with correct format for drawing steps
    cards_for_plotting_dir_name = "cards_for_plotting"
@@ -170,14 +180,18 @@ combine -M Asymptotic $1 > $3
    print "\nsignal_key_list : ", signal_key_list
    filelist_for_plotting = open(cards_for_plotting_dir_name+"/filelist.txt", "w")
 
-   xSec_root_file = ROOT.TFile("xSec_T3G.root")
-   h1_stop_xSec = xSec_root_file.Get("stop_xsection")
+   xSec_root_file = ROOT.TFile("xSec.root")
+   if "T2tt" in options.model or "T2bb" in options.model or "T2tb" in options.model or "T6tt" in options.model:
+      h1_xSec = xSec_root_file.Get("stop_xsection")
+   elif "T1tt" in options.model or "T5tt" in options.model:
+      h1_xSec = xSec_root_file.Get("gluino_xsection")
 
    for log_file_name in os.listdir(os.getcwd()):
       if not ("log_allComb" in log_file_name) and not (".lg" in log_file_name) : continue
       picked_key_name = ''
       for key_name in signal_key_list:
-         if key_name in log_file_name: 
+         more_key_name = "signal_"+key_name+".txt"
+         if more_key_name in log_file_name:
             picked_key_name = key_name
             break
 
@@ -187,8 +201,8 @@ combine -M Asymptotic $1 > $3
       momMass = split_key[0]
       dauMass = split_key[1]
 
-      binIdx = h1_stop_xSec.FindBin(float(momMass))
-      xSec = h1_stop_xSec.GetBinContent(binIdx)
+      binIdx = h1_xSec.FindBin(float(momMass))
+      xSec = h1_xSec.GetBinContent(binIdx)
      
       log_file = open(log_file_name)
       for log_line in log_file:

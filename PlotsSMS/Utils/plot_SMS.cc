@@ -49,15 +49,15 @@ TString topoStr = "T1";
 TString keyStr;
 
 // 25 GeV per X bin; 25 GeV per Y bin
-int nXbins = 52, nYbins = 47;
+int nXbins = 52, nYbins = 49;
 //const double loX = 100, hiX = 1225;
 //const double loY = 50, hiY = 1225;
-double loX = 212.5, hiX = 1512.5;
-double loY = 37.5, hiY = 1212.5;
+double loX = 612.5, hiX = 1912.5;
+double loY = -12.5, hiY = 1212.5;
 
-int nXbinsLG = 52, nYbinsLG = 47;
-double loXLG = 312.5, hiXLG = 1512.5;
-double loYLG = 37.5, hiYLG = 1212.5;
+int nXbinsLG = 52, nYbinsLG = 49;
+double loXLG = 612.5, hiXLG = 1912.5;
+double loYLG = -12.5, hiYLG = 1212.5;
 
 //const double scaleLegendFont = 1.8;
 const double scaleLegendFont = 1.8;
@@ -70,6 +70,7 @@ const double scaleLegendFont = 1.3;
 */
 
 TGraphErrors *diagonalGraph =0;
+TGraph  *diagonalCoverBand =0;
 
 int plot(int argc, char** argv)
 {
@@ -81,7 +82,7 @@ int plot(int argc, char** argv)
    }
    if( argc < 3 ){
       std::cout<<"\n################USAGE##########################"<<std::endl;
-      std::cout<<  "#./plot_SMS xxx yyy keystr                    #"<<std::endl;
+      std::cout<<  "#./plot_SMS xxx yyy keyStr                    #"<<std::endl;
       std::cout<<  "# xxx: T1 or T2                               #"<<std::endl;
       std::cout<<  "# yyy: T2tt BR                                #"<<std::endl;
       std::cout<<  "# keystr: comb [(comb,stop,sbottom)]          #"<<std::endl;
@@ -104,14 +105,14 @@ int plot(int argc, char** argv)
 // For T2, it's reference_4squark_xSec.root
 // For T2tt, it's reference_stop_xSec.root
    TFile *xSecProspinoFile = new TFile("reference_xSec.root");
-   if( topoStr == "T1" || topoStr == "T1qqqq" || topoStr == "T5ZZInc" || topoStr == "T1tttt" || topoStr == "T1bbbb" ) xSecProspino_T1 = (TH1D*) xSecProspinoFile->Get("gluino_xsection");
+   if( topoStr == "T1" || topoStr == "T1qqqq" || topoStr == "T5ZZInc" || topoStr == "T1tttt" || topoStr == "T1ttbb" || topoStr == "T1bbbb" || topoStr == "T5ttcc" || topoStr == "T5ttttDM175" || topoStr == "T5tttt_degen" ) xSecProspino_T1 = (TH1D*) xSecProspinoFile->Get("gluino_xsection");
    if( topoStr == "T2" || topoStr == "T2qq" ) xSecProspino_T2 = (TH1D*) xSecProspinoFile->Get("squark_xsection");
-   if( topoStr == "T2tt" ){
+   if( topoStr == "T2tt" || topoStr == "T2bb" || topoStr == "T2tb" || topoStr == "T6ttWW" ){
       xSecProspino_stop = (TH1D*) xSecProspinoFile->Get("stop_xsection");
    }
-   if( topoStr == "T1" || topoStr == "T1qqqq" || topoStr == "T5ZZInc" || topoStr == "T1tttt" || topoStr == "T1bbbb" ) xSecProspino = (TH1D*)xSecProspino_T1->Clone();
+   if( topoStr == "T1" || topoStr == "T1qqqq" || topoStr == "T5ZZInc" || topoStr == "T1tttt" || topoStr == "T1ttbb" || topoStr == "T1bbbb" || topoStr == "T5ttcc" || topoStr == "T5ttttDM175" || topoStr == "T5tttt_degen" ) xSecProspino = (TH1D*)xSecProspino_T1->Clone();
    if( topoStr == "T2" || topoStr == "T2qq" ) xSecProspino = (TH1D*)xSecProspino_T2->Clone();
-   if( topoStr == "T2tt" ) xSecProspino = (TH1D*)xSecProspino_stop->Clone();
+   if( topoStr == "T2tt" || topoStr == "T2bb" || topoStr == "T2tb" || topoStr == "T6ttWW" ) xSecProspino = (TH1D*)xSecProspino_stop->Clone();
    if( topoStr == "TGQ" ) xSecProspino = (TH1D*)xSecProspino_T2->Clone();
 
    for(int ib=0; ib<xSecProspino->GetNbinsX()+1; ib++){
@@ -120,14 +121,23 @@ int plot(int argc, char** argv)
    }
 
 // 25 GeV per X bin; 25 GeV per Y bin
-   if( topoStr == "T2tt" ){
-      nXbins = 32; nYbins = 22;
-      loX = 112.5; hiX = 912.5;
+   if( topoStr == "T2tt" || topoStr == "T2tb" ){
+      nXbins = 35; nYbins = 22;
+      loX =  87.5; hiX = 962.5;
       loY = -12.5; hiY = 537.5;
  
       nXbinsLG = 32; nYbinsLG = 22;
       loXLG = 112.5; hiXLG = 912.5;
       loYLG = -12.5; hiYLG = 537.5;
+   }
+   if( topoStr == "T6ttWW" ){
+      nXbins = 27; nYbins = 36;
+      loX = 287.5; hiX = 962.5;
+      loY =  62.5; hiY = 962.5;
+
+      nXbinsLG = 27; nYbinsLG = 36;
+      loXLG = 287.5; hiXLG = 962.5;
+      loYLG =  62.5; hiYLG = 962.5;
    }
 
    util::StyleSettings::paperNoTitle();
@@ -184,7 +194,7 @@ int plot(int argc, char** argv)
       }
    }
    diagonalGraph = new TGraphErrors(nDiagBins, xPtsDiag, yPtsDiag, xErrsDiag, yErrsDiag);
-   diagonalGraph->SetLineWidth(2); diagonalGraph->SetLineStyle(7);
+   diagonalGraph->SetLineWidth(2); diagonalGraph->SetLineStyle(7); diagonalGraph->SetLineColor(15);
    diagonalGraph->SetName("diagonalGraph");
 
    std::vector<TheLimits *> genpoints;
@@ -244,6 +254,14 @@ int plot(int argc, char** argv)
    std::vector<TGraph*> expExclPlusOneSigmaProspinoVec(nTotPlots), expExclMinusOneSigmaProspinoVec(nTotPlots);
    std::vector<TGraph*> obsExclPlusSysErrProspinoVec(nTotPlots), obsExclMinusSysErrProspinoVec(nTotPlots);
 
+   std::vector<TGraph*> expExclOneTimesProspino_baseVec(nTotPlots), expExclOneTimesProspino_extraVec(nTotPlots);
+   std::vector<TGraph*> expExclPlusOneSigmaProspino_baseVec(nTotPlots), expExclPlusOneSigmaProspino_extraVec(nTotPlots);
+   std::vector<TGraph*> expExclMinusOneSigmaProspino_baseVec(nTotPlots), expExclMinusOneSigmaProspino_extraVec(nTotPlots);
+
+   std::vector<TGraph*> obsExclOneTimesProspino_baseVec(nTotPlots), obsExclOneTimesProspino_extraVec(nTotPlots);
+   std::vector<TGraph*> obsExclPlusSysErrProspino_baseVec(nTotPlots), obsExclPlusSysErrProspino_extraVec(nTotPlots);
+   std::vector<TGraph*> obsExclMinusSysErrProspino_baseVec(nTotPlots), obsExclMinusSysErrProspino_extraVec(nTotPlots);
+
    TH2F *minCatsObsExclNLO, *minCatsExpExclNLO;
    TH2F *minObsExclNLO, *minExpExclNLO, *minObsExclNLOfollowminExp;
  
@@ -270,6 +288,8 @@ int plot(int argc, char** argv)
       if(i < nTotPlots-1){
 
          bool dointerpolation = true;
+         int dorebin = 1;
+         if( keyStr == "raw" ){ dointerpolation = false; dorebin =0; }
 
    //iso mass lines
    //usage: Line( <x-var>, <y-var>, <mass-function>, <mass-value>, <matching-width> )
@@ -294,7 +314,13 @@ int plot(int argc, char** argv)
          }else if( topoStr == "T2tt" ){
             hobslimit = new TH2F("obslimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hobslimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
-         }else if( topoStr == "TGQ" ){
+         }else if( topoStr == "T2bb" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{b}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{b}#tilde{b}, #tilde{b}#rightarrow b#tilde{#chi}^{0}#; m(#tilde{b})>m(#tilde{#chi}^{0})");
+         } else if( topoStr == "T2tb" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; #tilde{t}#rightarrow b#tilde{#chi}^{#pm}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
+         } else if( topoStr == "TGQ" ){
             hobslimit = new TH2F("obslimit",";m(#tilde{g}) [GeV]; m(#tilde{q}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hobslimit->SetTitle("pp#rightarrow#tilde{q}#tilde{g}, #tilde{q}#rightarrow q#tilde{#chi}^{0}, #tilde{g}#rightarrow qq#tilde{#chi}^{0}");
          }else if( topoStr == "T5ZZInc" ){
@@ -303,14 +329,32 @@ int plot(int argc, char** argv)
          }else if( topoStr == "T1tttt" ){
             hobslimit = new TH2F("obslimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hobslimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T1ttbb" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
          }else if( topoStr == "T1bbbb" ){
             hobslimit = new TH2F("obslimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hobslimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow bb#tilde{#chi}^{0}#; m(#tilde{b})>>m(#tilde{g})");
+         }else if( topoStr == "T5ttcc" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T5ttttDM175" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T5tttt_degen" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T6ttWW" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{b}) [GeV]; m(#tilde{#chi}^{#pm}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
          }
          plotTools[i]->Area(hobslimit, Mzero, Mhalf, NLOObsxSecCL, false);
 
          if( dointerpolation ){
             hobslimit = interpolate(hobslimit);
+         }
+         for(int ir=0; ir<dorebin; ir++){
+            hobslimit = rebin(hobslimit);
          }
 
          hobslimit->SetMinimum(0.001);
@@ -357,7 +401,13 @@ int plot(int argc, char** argv)
          }else if( topoStr == "T2tt" ){
             hexplimit = new TH2F("explimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hexplimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
-         }else if( topoStr == "TGQ" ){
+         }else if( topoStr == "T2bb" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{b}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{b}#tilde{b}, #tilde{b}#rightarrow b#tilde{#chi}^{0}#; m(#tilde{b})>m(#tilde{#chi}^{0})");
+         }else if( topoStr == "T2tb" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; #tilde{t}#rightarrow b#tilde{#chi}^{#pm}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
+         } else if( topoStr == "TGQ" ){
             hexplimit = new TH2F("explimit",";m(#tilde{g}) [GeV]; m(#tilde{q}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hexplimit->SetTitle("pp#rightarrow#tilde{q}#tilde{g}, #tilde{q}#rightarrow q#tilde{#chi}^{0}, #tilde{g}#rightarrow qq#tilde{#chi}^{0}");
          }else if( topoStr == "T5ZZInc"){
@@ -366,14 +416,32 @@ int plot(int argc, char** argv)
          }else if( topoStr == "T1tttt" ){
             hexplimit = new TH2F("explimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hexplimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T1ttbb" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
          }else if( topoStr == "T1bbbb" ){
             hexplimit = new TH2F("explimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hexplimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow bb#tilde{#chi}^{0}#; m(#tilde{b})>>m(#tilde{g})");
+         }else if( topoStr == "T5ttcc" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T5ttttDM175" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T5tttt_degen" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+         }else if( topoStr == "T6ttWW" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{b}) [GeV]; m(#tilde{#chi}^{#pm}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
          }
          plotTools[i]->Area(hexplimit, Mzero, Mhalf, NLOExpxSecCL, false);
 
          if( dointerpolation ){
             hexplimit = interpolate(hexplimit);
+         }
+         for(int ir=0; ir<dorebin; ir++){
+            hexplimit = rebin(hexplimit);
          }
 
          hexplimit->SetMinimum(0.001);
@@ -501,6 +569,8 @@ int plot(int argc, char** argv)
          int smoothMethod = -1;
          int dorebin = 2;
 
+         if( keyStr == "raw" ){ doSmooth = false; dointerpolation = false; dorebin = 0; }
+
          if( topoStr == "T5ZZInc" ) radiusToSmooth = 16;
          if( topoStr == "T1bbbb" ) radiusToSmooth = 16;
          if( topoStr == "T1tttt" ) radiusToSmooth = 8;
@@ -544,25 +614,44 @@ int plot(int argc, char** argv)
          iyb = obsExclOneTimesxSecProspinoTest->GetYaxis()->FindBin(0.0);
 //         obsExclOneTimesxSecProspinoTest->SetBinContent(ixb, iyb, 1);
 
-         TGraph * obsExclOneTimesxSecProspinoTMP = plotTools[i]->GetContour(obsExclOneTimesxSecProspinoTest, 3, 1, !doMyFill);
+         TGraph * obsExclOneTimesxSecProspinoTMP_base = plotTools[i]->GetContour(obsExclOneTimesxSecProspinoTest, 3, 1, !doMyFill);
+         TGraph * obsExclOneTimesxSecProspinoTMP_extra = plotTools[i]->GetContour(obsExclOneTimesxSecProspinoTest, 3, 2, !doMyFill);
+         if( keyStr == "fill" ) obsExclOneTimesxSecProspinoTMP_base = plotTools[i]->GetContour(obsExclOneTimesxSecProspinoTest, 3, 1, doMyFill);
          double tmpxgr=-1, tmpygr=-1;
-//         obsExclOneTimesxSecProspinoTMP->GetPoint(obsExclOneTimesxSecProspinoTMP->GetN()-1, tmpxgr, tmpygr);
-//         obsExclOneTimesxSecProspinoTMP->SetPoint(obsExclOneTimesxSecProspinoTMP->GetN(), tmpxgr, 0);
-         if( doSmooth ) Smooth(obsExclOneTimesxSecProspinoTMP, radiusToSmooth+2);
+//         obsExclOneTimesxSecProspinoTMP_base->GetPoint(obsExclOneTimesxSecProspinoTMP_base->GetN()-1, tmpxgr, tmpygr);
+//         obsExclOneTimesxSecProspinoTMP_base->SetPoint(obsExclOneTimesxSecProspinoTMP_base->GetN(), tmpxgr, 0);
+         if( doSmooth ) Smooth(obsExclOneTimesxSecProspinoTMP_base, radiusToSmooth+2);
+         if( doSmooth ) Smooth(obsExclOneTimesxSecProspinoTMP_extra, radiusToSmooth+2);
 
-         std::vector<double> xPts_obsExclOneTimesxSecProspino, yPts_obsExclOneTimesxSecProspino;
-         for(int ip=0; ip<obsExclOneTimesxSecProspinoTMP->GetN(); ip++){
+         std::vector<double> xPts_obsExclOneTimesxSecProspino_base, yPts_obsExclOneTimesxSecProspino_base;
+         for(int ip=0; ip<obsExclOneTimesxSecProspinoTMP_base->GetN(); ip++){
             double xgr=-1, ygr=-1;
-            obsExclOneTimesxSecProspinoTMP->GetPoint(ip, xgr, ygr);
+            obsExclOneTimesxSecProspinoTMP_base->GetPoint(ip, xgr, ygr);
             if( xgr >= obsOneTimesCutOffX ){
-               if( xgr != obsOneTimesCutOffX && xPts_obsExclOneTimesxSecProspino.empty() ){
-                  xPts_obsExclOneTimesxSecProspino.push_back(obsOneTimesCutOffX); yPts_obsExclOneTimesxSecProspino.push_back(ygr);
+               if( xgr != obsOneTimesCutOffX && xPts_obsExclOneTimesxSecProspino_base.empty() ){
+                  xPts_obsExclOneTimesxSecProspino_base.push_back(obsOneTimesCutOffX); yPts_obsExclOneTimesxSecProspino_base.push_back(ygr);
                }
-               xPts_obsExclOneTimesxSecProspino.push_back(xgr); yPts_obsExclOneTimesxSecProspino.push_back(ygr);
+               xPts_obsExclOneTimesxSecProspino_base.push_back(xgr); yPts_obsExclOneTimesxSecProspino_base.push_back(ygr);
             }
          }
-         int nPts_obsExclOneTimesxSecProspino = (int)xPts_obsExclOneTimesxSecProspino.size();
-         TGraph *obsExclOneTimesxSecProspino = new TGraph(nPts_obsExclOneTimesxSecProspino, &xPts_obsExclOneTimesxSecProspino[0], &yPts_obsExclOneTimesxSecProspino[0]);
+         int nPts_obsExclOneTimesxSecProspino_base = (int)xPts_obsExclOneTimesxSecProspino_base.size();
+         TGraph *obsExclOneTimesxSecProspino_base = new TGraph(nPts_obsExclOneTimesxSecProspino_base, &xPts_obsExclOneTimesxSecProspino_base[0], &yPts_obsExclOneTimesxSecProspino_base[0]);
+
+         std::vector<double> xPts_obsExclOneTimesxSecProspino_extra, yPts_obsExclOneTimesxSecProspino_extra;
+         for(int ip=0; ip<obsExclOneTimesxSecProspinoTMP_extra->GetN(); ip++){
+            double xgr=-1, ygr=-1;
+            obsExclOneTimesxSecProspinoTMP_extra->GetPoint(ip, xgr, ygr);
+            if( xgr >= obsOneTimesCutOffX ){
+               if( xgr != obsOneTimesCutOffX && xPts_obsExclOneTimesxSecProspino_extra.empty() ){
+                  xPts_obsExclOneTimesxSecProspino_extra.push_back(obsOneTimesCutOffX); yPts_obsExclOneTimesxSecProspino_extra.push_back(ygr);
+               }
+               xPts_obsExclOneTimesxSecProspino_extra.push_back(xgr); yPts_obsExclOneTimesxSecProspino_extra.push_back(ygr);
+            }
+         }
+         int nPts_obsExclOneTimesxSecProspino_extra = (int)xPts_obsExclOneTimesxSecProspino_extra.size();
+         TGraph *obsExclOneTimesxSecProspino_extra = new TGraph(nPts_obsExclOneTimesxSecProspino_extra, &xPts_obsExclOneTimesxSecProspino_extra[0], &yPts_obsExclOneTimesxSecProspino_extra[0]);
+
+         TGraph *obsExclOneTimesxSecProspino = MakeBand(obsExclOneTimesxSecProspino_base, obsExclOneTimesxSecProspino_extra);
 /*
          if( topoStr == "T2" || topoStr == "T2qq" ){ obsExclOneTimesxSecProspino->RemovePoint(0); obsExclOneTimesxSecProspino->RemovePoint(0); }
          if( topoStr == "T5ZZInc" ){ obsExclOneTimesxSecProspino->RemovePoint(0); }
@@ -640,24 +729,43 @@ int plot(int argc, char** argv)
             plotTools[i]->Area(obsExclPlusSysErrxSecProspinoTest, Mzero, Mhalf, NLOObsxSecCL, xSecProspino, 1.0, doMyFill, xBinLargery, 1, obsExclPlusSysErrxSecProspinoSmooth);
          }
 
-         TGraph * obsExclPlusSysErrxSecProspinoTMP = plotTools[i]->GetContour(obsExclPlusSysErrxSecProspinoTest, 3, 1, !doMyFill);
-//         obsExclPlusSysErrxSecProspinoTMP->GetPoint(obsExclPlusSysErrxSecProspinoTMP->GetN()-1, tmpxgr, tmpygr);
+         TGraph * obsExclPlusSysErrxSecProspinoTMP_base = plotTools[i]->GetContour(obsExclPlusSysErrxSecProspinoTest, 3, 1, !doMyFill);
+         TGraph * obsExclPlusSysErrxSecProspinoTMP_extra = plotTools[i]->GetContour(obsExclPlusSysErrxSecProspinoTest, 3, 2, !doMyFill);
+         if( keyStr == "fill" ) obsExclPlusSysErrxSecProspinoTMP_base = plotTools[i]->GetContour(obsExclPlusSysErrxSecProspinoTest, 3, 1, doMyFill);
+//         obsExclPlusSysErrxSecProspinoTMP_base->GetPoint(obsExclPlusSysErrxSecProspinoTMP_base->GetN()-1, tmpxgr, tmpygr);
 //         obsExclPlusSysErrxSecProspinoTMP->SetPoint(obsExclPlusSysErrxSecProspinoTMP->GetN(), tmpxgr, 0);
-         if( doSmooth ) Smooth(obsExclPlusSysErrxSecProspinoTMP, radiusToSmooth+3);
+         if( doSmooth ) Smooth(obsExclPlusSysErrxSecProspinoTMP_base, radiusToSmooth+3);
+         if( doSmooth ) Smooth(obsExclPlusSysErrxSecProspinoTMP_extra, radiusToSmooth+3);
 
-         std::vector<double> xPts_obsExclPlusSysErrxSecProspino, yPts_obsExclPlusSysErrxSecProspino;
-         for(int ip=0; ip<obsExclPlusSysErrxSecProspinoTMP->GetN(); ip++){
+         std::vector<double> xPts_obsExclPlusSysErrxSecProspino_base, yPts_obsExclPlusSysErrxSecProspino_base;
+         for(int ip=0; ip<obsExclPlusSysErrxSecProspinoTMP_base->GetN(); ip++){
             double xgr=-1, ygr=-1;
-            obsExclPlusSysErrxSecProspinoTMP->GetPoint(ip, xgr, ygr);
+            obsExclPlusSysErrxSecProspinoTMP_base->GetPoint(ip, xgr, ygr);
             if( xgr >= obsPlusSysErrCutOffX ){
-               if( xgr != obsPlusSysErrCutOffX && xPts_obsExclPlusSysErrxSecProspino.empty() ){
-                  xPts_obsExclPlusSysErrxSecProspino.push_back(obsPlusSysErrCutOffX); yPts_obsExclPlusSysErrxSecProspino.push_back(ygr);
+               if( xgr != obsPlusSysErrCutOffX && xPts_obsExclPlusSysErrxSecProspino_base.empty() ){
+                  xPts_obsExclPlusSysErrxSecProspino_base.push_back(obsPlusSysErrCutOffX); yPts_obsExclPlusSysErrxSecProspino_base.push_back(ygr);
                }
-               xPts_obsExclPlusSysErrxSecProspino.push_back(xgr); yPts_obsExclPlusSysErrxSecProspino.push_back(ygr);
+               xPts_obsExclPlusSysErrxSecProspino_base.push_back(xgr); yPts_obsExclPlusSysErrxSecProspino_base.push_back(ygr);
             }
          }
-         int nPts_obsExclPlusSysErrxSecProspino = (int)xPts_obsExclPlusSysErrxSecProspino.size();
-         TGraph *obsExclPlusSysErrxSecProspino = new TGraph(nPts_obsExclPlusSysErrxSecProspino, &xPts_obsExclPlusSysErrxSecProspino[0], &yPts_obsExclPlusSysErrxSecProspino[0]);
+         int nPts_obsExclPlusSysErrxSecProspino_base = (int)xPts_obsExclPlusSysErrxSecProspino_base.size();
+         TGraph *obsExclPlusSysErrxSecProspino_base = new TGraph(nPts_obsExclPlusSysErrxSecProspino_base, &xPts_obsExclPlusSysErrxSecProspino_base[0], &yPts_obsExclPlusSysErrxSecProspino_base[0]);
+
+         std::vector<double> xPts_obsExclPlusSysErrxSecProspino_extra, yPts_obsExclPlusSysErrxSecProspino_extra;
+         for(int ip=0; ip<obsExclPlusSysErrxSecProspinoTMP_extra->GetN(); ip++){
+            double xgr=-1, ygr=-1;
+            obsExclPlusSysErrxSecProspinoTMP_extra->GetPoint(ip, xgr, ygr);
+            if( xgr >= obsPlusSysErrCutOffX ){
+               if( xgr != obsPlusSysErrCutOffX && xPts_obsExclPlusSysErrxSecProspino_base.empty() ){
+                  xPts_obsExclPlusSysErrxSecProspino_extra.push_back(obsPlusSysErrCutOffX); yPts_obsExclPlusSysErrxSecProspino_extra.push_back(ygr);
+               }
+               xPts_obsExclPlusSysErrxSecProspino_extra.push_back(xgr); yPts_obsExclPlusSysErrxSecProspino_extra.push_back(ygr);
+            }
+         }
+         int nPts_obsExclPlusSysErrxSecProspino_extra = (int)xPts_obsExclPlusSysErrxSecProspino_extra.size();
+         TGraph *obsExclPlusSysErrxSecProspino_extra = new TGraph(nPts_obsExclPlusSysErrxSecProspino_extra, &xPts_obsExclPlusSysErrxSecProspino_extra[0], &yPts_obsExclPlusSysErrxSecProspino_extra[0]);
+
+         TGraph *obsExclPlusSysErrxSecProspino = MakeBand(obsExclPlusSysErrxSecProspino_base, obsExclPlusSysErrxSecProspino_extra);
 /*
          if( topoStr == "T2" || topoStr == "T2qq" ){ obsExclPlusSysErrxSecProspino->RemovePoint(0); }
          if( topoStr == "T5ZZInc" ){ obsExclPlusSysErrxSecProspino->RemovePoint(0); }
@@ -694,30 +802,48 @@ int plot(int argc, char** argv)
             plotTools[i]->Area(obsExclMinusSysErrxSecProspinoTest, Mzero, Mhalf, NLOObsxSecCL, xSecProspino, 1.0, doMyFill, xBinLargery, -1, obsExclMinusSysErrxSecProspinoSmooth);
          }
 
-         TGraph * obsExclMinusSysErrxSecProspinoTMP = plotTools[i]->GetContour(obsExclMinusSysErrxSecProspinoTest, 3, 1, !doMyFill);
-//         obsExclMinusSysErrxSecProspinoTMP->GetPoint(obsExclMinusSysErrxSecProspinoTMP->GetN()-1, tmpxgr, tmpygr);
-//         obsExclMinusSysErrxSecProspinoTMP->SetPoint(obsExclMinusSysErrxSecProspinoTMP->GetN(), tmpxgr, 0);
-         for(int ip=0; ip<obsExclMinusSysErrxSecProspinoTMP->GetN(); ip++){
+         TGraph * obsExclMinusSysErrxSecProspinoTMP_base = plotTools[i]->GetContour(obsExclMinusSysErrxSecProspinoTest, 3, 1, !doMyFill);
+         TGraph * obsExclMinusSysErrxSecProspinoTMP_extra = plotTools[i]->GetContour(obsExclMinusSysErrxSecProspinoTest, 3, 2, !doMyFill);
+         if( keyStr == "fill" ) obsExclMinusSysErrxSecProspinoTMP_base = plotTools[i]->GetContour(obsExclMinusSysErrxSecProspinoTest, 3, 1, doMyFill);
+//         obsExclMinusSysErrxSecProspinoTMP_base->GetPoint(obsExclMinusSysErrxSecProspinoTMP_base->GetN()-1, tmpxgr, tmpygr);
+//         obsExclMinusSysErrxSecProspinoTMP_base->SetPoint(obsExclMinusSysErrxSecProspinoTMP_base->GetN(), tmpxgr, 0);
+         for(int ip=0; ip<obsExclMinusSysErrxSecProspinoTMP_base->GetN(); ip++){
             double xgr=-1, ygr=-1;
-            obsExclMinusSysErrxSecProspinoTMP->GetPoint(ip, xgr, ygr);
+            obsExclMinusSysErrxSecProspinoTMP_base->GetPoint(ip, xgr, ygr);
 //            if( xgr <= 400 && xgr >=290 ) obsExclMinusSysErrxSecProspinoTMP->SetPoint(ip, xgr, ygr-8);
          }
-         if( doSmooth ) Smooth(obsExclMinusSysErrxSecProspinoTMP, radiusToSmooth+3);
+         if( doSmooth ) Smooth(obsExclMinusSysErrxSecProspinoTMP_base, radiusToSmooth+3);
+         if( doSmooth ) Smooth(obsExclMinusSysErrxSecProspinoTMP_extra, radiusToSmooth+3);
 
-         std::vector<double> xPts_obsExclMinusSysErrxSecProspino, yPts_obsExclMinusSysErrxSecProspino;
-         for(int ip=0; ip<obsExclMinusSysErrxSecProspinoTMP->GetN(); ip++){
+         std::vector<double> xPts_obsExclMinusSysErrxSecProspino_base, yPts_obsExclMinusSysErrxSecProspino_base;
+         for(int ip=0; ip<obsExclMinusSysErrxSecProspinoTMP_base->GetN(); ip++){
             double xgr=-1, ygr=-1;
-            obsExclMinusSysErrxSecProspinoTMP->GetPoint(ip, xgr, ygr);
+            obsExclMinusSysErrxSecProspinoTMP_base->GetPoint(ip, xgr, ygr);
             if( xgr >= obsMinusSysErrCutOffX ){
-               if( xgr != obsMinusSysErrCutOffX && xPts_obsExclMinusSysErrxSecProspino.empty() ){
-                  xPts_obsExclMinusSysErrxSecProspino.push_back(obsMinusSysErrCutOffX); yPts_obsExclMinusSysErrxSecProspino.push_back(ygr);
+               if( xgr != obsMinusSysErrCutOffX && xPts_obsExclMinusSysErrxSecProspino_base.empty() ){
+                  xPts_obsExclMinusSysErrxSecProspino_base.push_back(obsMinusSysErrCutOffX); yPts_obsExclMinusSysErrxSecProspino_base.push_back(ygr);
                }
-               xPts_obsExclMinusSysErrxSecProspino.push_back(xgr); yPts_obsExclMinusSysErrxSecProspino.push_back(ygr); 
+               xPts_obsExclMinusSysErrxSecProspino_base.push_back(xgr); yPts_obsExclMinusSysErrxSecProspino_base.push_back(ygr); 
             }
          }
-         int nPts_obsExclMinusSysErrxSecProspino = (int)xPts_obsExclMinusSysErrxSecProspino.size();
-         TGraph *obsExclMinusSysErrxSecProspino = new TGraph(nPts_obsExclMinusSysErrxSecProspino, &xPts_obsExclMinusSysErrxSecProspino[0], &yPts_obsExclMinusSysErrxSecProspino[0]);
+         int nPts_obsExclMinusSysErrxSecProspino_base = (int)xPts_obsExclMinusSysErrxSecProspino_base.size();
+         TGraph *obsExclMinusSysErrxSecProspino_base = new TGraph(nPts_obsExclMinusSysErrxSecProspino_base, &xPts_obsExclMinusSysErrxSecProspino_base[0], &yPts_obsExclMinusSysErrxSecProspino_base[0]);
 
+         std::vector<double> xPts_obsExclMinusSysErrxSecProspino_extra, yPts_obsExclMinusSysErrxSecProspino_extra;
+         for(int ip=0; ip<obsExclMinusSysErrxSecProspinoTMP_extra->GetN(); ip++){
+            double xgr=-1, ygr=-1;
+            obsExclMinusSysErrxSecProspinoTMP_extra->GetPoint(ip, xgr, ygr);
+            if( xgr >= obsMinusSysErrCutOffX ){
+               if( xgr != obsMinusSysErrCutOffX && xPts_obsExclMinusSysErrxSecProspino_extra.empty() ){
+                  xPts_obsExclMinusSysErrxSecProspino_extra.push_back(obsMinusSysErrCutOffX); yPts_obsExclMinusSysErrxSecProspino_extra.push_back(ygr);
+               }
+               xPts_obsExclMinusSysErrxSecProspino_extra.push_back(xgr); yPts_obsExclMinusSysErrxSecProspino_extra.push_back(ygr);
+            }
+         }
+         int nPts_obsExclMinusSysErrxSecProspino_extra = (int)xPts_obsExclMinusSysErrxSecProspino_extra.size();
+         TGraph *obsExclMinusSysErrxSecProspino_extra = new TGraph(nPts_obsExclMinusSysErrxSecProspino_extra, &xPts_obsExclMinusSysErrxSecProspino_extra[0], &yPts_obsExclMinusSysErrxSecProspino_extra[0]);
+
+         TGraph *obsExclMinusSysErrxSecProspino = MakeBand(obsExclMinusSysErrxSecProspino_base, obsExclMinusSysErrxSecProspino_extra);
 /*
          if( topoStr == "T5ZZInc" ){ obsExclMinusSysErrxSecProspino->RemovePoint(0); obsExclMinusSysErrxSecProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ obsExclMinusSysErrxSecProspino->RemovePoint(0); obsExclMinusSysErrxSecProspino->RemovePoint(0); }
@@ -739,12 +865,63 @@ int plot(int argc, char** argv)
             obsExclMinusSysErrxSecProspino->GetPoint(0, tmpxgr, tmpygr); obsExclMinusSysErrxSecProspino->SetPoint(obsExclMinusSysErrxSecProspino->GetN(), tmpxgr, tmpygr);
          }
 */
+         if( keyStr == "fill" ){
+            for(unsigned int ir=0; ir<47; ir++){ obsExclOneTimesxSecProspino->RemovePoint(0); }
+            for(unsigned int ir=0; ir<47; ir++){ obsExclPlusSysErrxSecProspino->RemovePoint(0); }
+            for(unsigned int ir=0; ir<43; ir++){ obsExclMinusSysErrxSecProspino->RemovePoint(0); }
+         }
+
+         if( keyStr == "adjT2tt" ){
+            double ptx, pty;
+            obsExclOneTimesxSecProspino->GetPoint(0, ptx, pty);
+            obsExclOneTimesxSecProspino->SetPoint(0, ptx, -1);
+            obsExclOneTimesxSecProspino->GetPoint(obsExclOneTimesxSecProspino->GetN()-1, ptx, pty);
+            obsExclOneTimesxSecProspino->SetPoint(obsExclOneTimesxSecProspino->GetN(), ptx, -1);
+
+            obsExclPlusSysErrxSecProspino->GetPoint(0, ptx, pty);
+            obsExclPlusSysErrxSecProspino->SetPoint(0, ptx, -1);
+            obsExclPlusSysErrxSecProspino->GetPoint(obsExclPlusSysErrxSecProspino->GetN()-1, ptx, pty);
+            obsExclPlusSysErrxSecProspino->SetPoint(obsExclPlusSysErrxSecProspino->GetN(), ptx, -1);
+
+            obsExclMinusSysErrxSecProspino->GetPoint(0, ptx, pty);
+            obsExclMinusSysErrxSecProspino->SetPoint(0, ptx, -1);
+            obsExclMinusSysErrxSecProspino->GetPoint(obsExclMinusSysErrxSecProspino->GetN()-1, ptx, pty);
+            obsExclMinusSysErrxSecProspino->SetPoint(obsExclMinusSysErrxSecProspino->GetN(), ptx, -1);
+
+            obsExclMinusSysErrxSecProspino_extra->RemovePoint(0);
+            obsExclOneTimesxSecProspino_extra->RemovePoint(0);
+
+            obsExclOneTimesxSecProspino_base->GetPoint(obsExclOneTimesxSecProspino_base->GetN()-1, ptx, pty);
+            obsExclOneTimesxSecProspino_base->SetPoint(obsExclOneTimesxSecProspino_base->GetN(), ptx, -1);
+//            obsExclOneTimesxSecProspino_extra->GetPoint(obsExclOneTimesxSecProspino_extra->GetN()-1, ptx, pty);
+//            obsExclOneTimesxSecProspino_extra->SetPoint(obsExclOneTimesxSecProspino_extra->GetN(), ptx, -1);
+
+            obsExclPlusSysErrxSecProspino_base->GetPoint(obsExclPlusSysErrxSecProspino_base->GetN()-1, ptx, pty);
+            obsExclPlusSysErrxSecProspino_base->SetPoint(obsExclPlusSysErrxSecProspino_base->GetN(), ptx, -1);
+//            obsExclPlusSysErrxSecProspino_extra->GetPoint(0, ptx, pty);
+//            obsExclPlusSysErrxSecProspino_extra->SetPoint(0, ptx, -1);
+//            obsExclPlusSysErrxSecProspino_extra->GetPoint(obsExclPlusSysErrxSecProspino_extra->GetN()-1, ptx, pty);
+//            obsExclPlusSysErrxSecProspino_extra->SetPoint(obsExclPlusSysErrxSecProspino_extra->GetN(), ptx, -1);
+
+            obsExclMinusSysErrxSecProspino_base->GetPoint(obsExclMinusSysErrxSecProspino_base->GetN()-1, ptx, pty);
+            obsExclMinusSysErrxSecProspino_base->SetPoint(obsExclMinusSysErrxSecProspino_base->GetN(), ptx, -1);
+//            obsExclMinusSysErrxSecProspino_extra->GetPoint(obsExclMinusSysErrxSecProspino_extra->GetN()-1, ptx, pty);
+//            obsExclMinusSysErrxSecProspino_extra->SetPoint(obsExclMinusSysErrxSecProspino_extra->GetN(), ptx, -1);
+            obsExclMinusSysErrxSecProspino_extra->GetPoint(0, ptx, pty);
+            obsExclMinusSysErrxSecProspino_extra->SetPoint(0, ptx, -1);
+         }
 
          obsHistName = region[i]+"obsExclOneTimesProspino"; obsExclOneTimesProspinoVec[i] = (TGraph*) obsExclOneTimesxSecProspino->Clone(obsHistName.Data());
+         obsHistName = region[i]+"obsExclOneTimesProspino_base"; obsExclOneTimesProspino_baseVec[i] = (TGraph*) obsExclOneTimesxSecProspino_base->Clone(obsHistName.Data());
+         obsHistName = region[i]+"obsExclOneTimesProspino_extra"; obsExclOneTimesProspino_extraVec[i] = (TGraph*) obsExclOneTimesxSecProspino_extra->Clone(obsHistName.Data());
          obsHistName = region[i]+"obsExclThreeTimesProspino"; obsExclThreeTimesProspinoVec[i] = (TGraph*) obsExclThreeTimesxSecProspino->Clone(obsHistName.Data());
          obsHistName = region[i]+"obsExclOneThirdProspino"; obsExclOneThirdProspinoVec[i] = (TGraph*) obsExclOneThirdxSecProspino->Clone(obsHistName.Data());
          obsHistName = region[i]+"obsExclPlusSysErrProspino"; obsExclPlusSysErrProspinoVec[i] = (TGraph*) obsExclPlusSysErrxSecProspino->Clone(obsHistName.Data());
+         obsHistName = region[i]+"obsExclPlusSysErrProspino_base"; obsExclPlusSysErrProspino_baseVec[i] = (TGraph*) obsExclPlusSysErrxSecProspino_base->Clone(obsHistName.Data());
+         obsHistName = region[i]+"obsExclPlusSysErrProspino_extra"; obsExclPlusSysErrProspino_extraVec[i] = (TGraph*) obsExclPlusSysErrxSecProspino_extra->Clone(obsHistName.Data());
          obsHistName = region[i]+"obsExclMinusSysErrProspino"; obsExclMinusSysErrProspinoVec[i] = (TGraph*) obsExclMinusSysErrxSecProspino->Clone(obsHistName.Data());
+         obsHistName = region[i]+"obsExclMinusSysErrProspino_base"; obsExclMinusSysErrProspino_baseVec[i] = (TGraph*) obsExclMinusSysErrxSecProspino_base->Clone(obsHistName.Data());
+         obsHistName = region[i]+"obsExclMinusSysErrProspino_extra"; obsExclMinusSysErrProspino_extraVec[i] = (TGraph*) obsExclMinusSysErrxSecProspino_extra->Clone(obsHistName.Data());
 
          minObsExclNLOcloned->SetMinimum(0.001);
          minObsExclNLOcloned->SetMaximum(20);
@@ -830,35 +1007,48 @@ int plot(int argc, char** argv)
             expExclOneTimesxSecProspinoTest->SetBinContent(ixb, iyb, 1);
          }
 */
-         TGraph * expExclOneTimesxSecProspinoTMP = plotTools[i]->GetContour(expExclOneTimesxSecProspinoTest, 3, 1, !doMyFill);
-         expExclOneTimesxSecProspinoTMP->GetPoint(expExclOneTimesxSecProspinoTMP->GetN()-1, tmpxgr, tmpygr);
-//         expExclOneTimesxSecProspinoTMP->SetPoint(expExclOneTimesxSecProspinoTMP->GetN(), tmpxgr, 0);
-         if( doSmooth ) Smooth(expExclOneTimesxSecProspinoTMP, radiusToSmooth);
+         TGraph * expExclOneTimesxSecProspinoTMP_base = plotTools[i]->GetContour(expExclOneTimesxSecProspinoTest, 3, 1, !doMyFill);
+         TGraph * expExclOneTimesxSecProspinoTMP_extra = plotTools[i]->GetContour(expExclOneTimesxSecProspinoTest, 3, 2, !doMyFill);
+         expExclOneTimesxSecProspinoTMP_base->GetPoint(expExclOneTimesxSecProspinoTMP_base->GetN()-1, tmpxgr, tmpygr);
+//         expExclOneTimesxSecProspinoTMP_base->SetPoint(expExclOneTimesxSecProspinoTMP_base->GetN(), tmpxgr, 0);
+         if( doSmooth ) Smooth(expExclOneTimesxSecProspinoTMP_base, radiusToSmooth);
+         if( doSmooth ) Smooth(expExclOneTimesxSecProspinoTMP_extra, radiusToSmooth);
 
-         std::vector<double> xPts_expExclOneTimesxSecProspino, yPts_expExclOneTimesxSecProspino;
-         for(int ip=0; ip<expExclOneTimesxSecProspinoTMP->GetN(); ip++){
+         std::vector<double> xPts_expExclOneTimesxSecProspino_base, yPts_expExclOneTimesxSecProspino_base;
+         for(int ip=0; ip<expExclOneTimesxSecProspinoTMP_base->GetN(); ip++){
             double xgr=-1, ygr=-1;
-            expExclOneTimesxSecProspinoTMP->GetPoint(ip, xgr, ygr);
+            expExclOneTimesxSecProspinoTMP_base->GetPoint(ip, xgr, ygr);
             if( xgr >= expOneTimesCutOffX ){
-               if( xgr != expOneTimesCutOffX && xPts_expExclOneTimesxSecProspino.empty() ){
-                  xPts_expExclOneTimesxSecProspino.push_back(expOneTimesCutOffX); yPts_expExclOneTimesxSecProspino.push_back(ygr);
+               if( xgr != expOneTimesCutOffX && xPts_expExclOneTimesxSecProspino_base.empty() ){
+                  xPts_expExclOneTimesxSecProspino_base.push_back(expOneTimesCutOffX); yPts_expExclOneTimesxSecProspino_base.push_back(ygr);
                }
-//               if( xgr > 300 && xgr<325 ){ xPts_expExclOneTimesxSecProspino.push_back(xgr); yPts_expExclOneTimesxSecProspino.push_back(ygr-5); }
-//               else{ xPts_expExclOneTimesxSecProspino.push_back(xgr); yPts_expExclOneTimesxSecProspino.push_back(ygr); }
-               xPts_expExclOneTimesxSecProspino.push_back(xgr); yPts_expExclOneTimesxSecProspino.push_back(ygr);
+               xPts_expExclOneTimesxSecProspino_base.push_back(xgr); yPts_expExclOneTimesxSecProspino_base.push_back(ygr); 
             }
          }
-         int nPts_expExclOneTimesxSecProspino = (int)xPts_expExclOneTimesxSecProspino.size();
-         TGraph *expExclOneTimesxSecProspino = new TGraph(nPts_expExclOneTimesxSecProspino, &xPts_expExclOneTimesxSecProspino[0], &yPts_expExclOneTimesxSecProspino[0]);
-/*
-         if( topoStr == "T1" || topoStr == "T1qqqq" ){ expExclOneTimesxSecProspino->RemovePoint(0); }
-         if( topoStr == "T2" || topoStr == "T2qq" ){ expExclOneTimesxSecProspino->RemovePoint(0); expExclOneTimesxSecProspino->RemovePoint(0); }
-         if( topoStr == "T1bbbb" ){ expExclOneTimesxSecProspino->RemovePoint(0); expExclOneTimesxSecProspino->RemovePoint(0); }
-*/
+         int nPts_expExclOneTimesxSecProspino_base = (int)xPts_expExclOneTimesxSecProspino_base.size();
+         TGraph *expExclOneTimesxSecProspino_base = new TGraph(nPts_expExclOneTimesxSecProspino_base, &xPts_expExclOneTimesxSecProspino_base[0], &yPts_expExclOneTimesxSecProspino_base[0]);
+
+         std::vector<double> xPts_expExclOneTimesxSecProspino_extra, yPts_expExclOneTimesxSecProspino_extra;
+         for(int ip=0; ip<expExclOneTimesxSecProspinoTMP_extra->GetN(); ip++){
+            double xgr=-1, ygr=-1;
+            expExclOneTimesxSecProspinoTMP_extra->GetPoint(ip, xgr, ygr);
+            if( xgr >= expOneTimesCutOffX ){
+               if( xgr != expOneTimesCutOffX && xPts_expExclOneTimesxSecProspino_extra.empty() ){
+                  xPts_expExclOneTimesxSecProspino_extra.push_back(expOneTimesCutOffX); yPts_expExclOneTimesxSecProspino_extra.push_back(ygr);
+               }
+               xPts_expExclOneTimesxSecProspino_extra.push_back(xgr); yPts_expExclOneTimesxSecProspino_extra.push_back(ygr); 
+            }
+         }
+         int nPts_expExclOneTimesxSecProspino_extra = (int)xPts_expExclOneTimesxSecProspino_extra.size();
+         TGraph *expExclOneTimesxSecProspino_extra = new TGraph(nPts_expExclOneTimesxSecProspino_extra, &xPts_expExclOneTimesxSecProspino_extra[0], &yPts_expExclOneTimesxSecProspino_extra[0]);
+
+         TGraph *expExclOneTimesxSecProspino = MakeBand(expExclOneTimesxSecProspino_base, expExclOneTimesxSecProspino_extra);
+//         TGraph *expExclOneTimesxSecProspino = expExclOneTimesxSecProspino_base;
 
          expExclOneTimesxSecProspinoTestComb = (TH2F*) expExclOneTimesxSecProspinoTest->Clone("expExclOneTimesxSecTestComb");
 
          expExclOneTimesxSecProspinoTest->Draw("colz");
+         expExclOneTimesxSecProspino->Draw("same");
          c1->SaveAs(outDir + "/" +topoStr +"_" + region[i]+"_Exp_TestContour.pdf");
 
 // +1 Sigma
@@ -887,29 +1077,48 @@ int plot(int argc, char** argv)
             plotTools[i]->Area(expExclPlusOneSigmaProspinoTest, Mzero, Mhalf, NLOExpxSecp1sigma, xSecProspino, 1.0, doMyFill, xBinLargery, 0, expExclPlusOneSigmaProspinoSmooth);
          }
          
-         TGraph * expExclPlusOneSigmaProspinoTMP = plotTools[i]->GetContour(expExclPlusOneSigmaProspinoTest, 3, 1, !doMyFill);
-         expExclPlusOneSigmaProspinoTMP->GetPoint(expExclPlusOneSigmaProspinoTMP->GetN()-1, tmpxgr, tmpygr);
-//         expExclPlusOneSigmaProspinoTMP->SetPoint(expExclPlusOneSigmaProspinoTMP->GetN(), tmpxgr, 0);
-         if( doSmooth ) Smooth(expExclPlusOneSigmaProspinoTMP, radiusToSmooth+2);
+         TGraph * expExclPlusOneSigmaProspinoTMP_base = plotTools[i]->GetContour(expExclPlusOneSigmaProspinoTest, 3, 1, !doMyFill);
+         TGraph * expExclPlusOneSigmaProspinoTMP_extra = plotTools[i]->GetContour(expExclPlusOneSigmaProspinoTest, 2, 2, !doMyFill);
+         expExclPlusOneSigmaProspinoTMP_base->GetPoint(expExclPlusOneSigmaProspinoTMP_base->GetN()-1, tmpxgr, tmpygr);
+//         expExclPlusOneSigmaProspinoTMP_base->SetPoint(expExclPlusOneSigmaProspinoTMP_base->GetN(), tmpxgr, 0);
+         if( doSmooth ) Smooth(expExclPlusOneSigmaProspinoTMP_base, radiusToSmooth+2);
+         if( doSmooth ) Smooth(expExclPlusOneSigmaProspinoTMP_extra, radiusToSmooth+2);
 
-         std::vector<double> xPts_expExclPlusOneSigmaProspino, yPts_expExclPlusOneSigmaProspino;
-         for(int ip=0; ip<expExclPlusOneSigmaProspinoTMP->GetN(); ip++){
+         std::vector<double> xPts_expExclPlusOneSigmaProspino_base, yPts_expExclPlusOneSigmaProspino_base;
+         for(int ip=0; ip<expExclPlusOneSigmaProspinoTMP_base->GetN(); ip++){
             double xgr=-1, ygr=-1;
-            expExclPlusOneSigmaProspinoTMP->GetPoint(ip, xgr, ygr);
+            expExclPlusOneSigmaProspinoTMP_base->GetPoint(ip, xgr, ygr);
             if( xgr >= expPlusOneSigmaCutOffX ){
-               if( xgr != expPlusOneSigmaCutOffX && xPts_expExclPlusOneSigmaProspino.empty() ){
-                  xPts_expExclPlusOneSigmaProspino.push_back(expPlusOneSigmaCutOffX); yPts_expExclPlusOneSigmaProspino.push_back(ygr);
+               if( xgr != expPlusOneSigmaCutOffX && xPts_expExclPlusOneSigmaProspino_base.empty() ){
+                  xPts_expExclPlusOneSigmaProspino_base.push_back(expPlusOneSigmaCutOffX); yPts_expExclPlusOneSigmaProspino_base.push_back(ygr);
                }
-               xPts_expExclPlusOneSigmaProspino.push_back(xgr); yPts_expExclPlusOneSigmaProspino.push_back(ygr); 
+               xPts_expExclPlusOneSigmaProspino_base.push_back(xgr); yPts_expExclPlusOneSigmaProspino_base.push_back(ygr); 
             }
          }
-         int nPts_expExclPlusOneSigmaProspino = (int)xPts_expExclPlusOneSigmaProspino.size();
-         TGraph *expExclPlusOneSigmaProspino = new TGraph(nPts_expExclPlusOneSigmaProspino, &xPts_expExclPlusOneSigmaProspino[0], &yPts_expExclPlusOneSigmaProspino[0]);
+         int nPts_expExclPlusOneSigmaProspino_base = (int)xPts_expExclPlusOneSigmaProspino_base.size();
+         TGraph *expExclPlusOneSigmaProspino_base = new TGraph(nPts_expExclPlusOneSigmaProspino_base, &xPts_expExclPlusOneSigmaProspino_base[0], &yPts_expExclPlusOneSigmaProspino_base[0]);
+
+         std::vector<double> xPts_expExclPlusOneSigmaProspino_extra, yPts_expExclPlusOneSigmaProspino_extra;
+         for(int ip=0; ip<expExclPlusOneSigmaProspinoTMP_extra->GetN(); ip++){
+            double xgr=-1, ygr=-1;
+            expExclPlusOneSigmaProspinoTMP_extra->GetPoint(ip, xgr, ygr);
+            if( xgr >= expPlusOneSigmaCutOffX ){
+               if( xgr != expPlusOneSigmaCutOffX && xPts_expExclPlusOneSigmaProspino_extra.empty() ){
+                  xPts_expExclPlusOneSigmaProspino_extra.push_back(expPlusOneSigmaCutOffX); yPts_expExclPlusOneSigmaProspino_extra.push_back(ygr);
+               }
+               xPts_expExclPlusOneSigmaProspino_extra.push_back(xgr); yPts_expExclPlusOneSigmaProspino_extra.push_back(ygr); 
+            }
+         }
+         int nPts_expExclPlusOneSigmaProspino_extra = (int)xPts_expExclPlusOneSigmaProspino_extra.size();
+         TGraph *expExclPlusOneSigmaProspino_extra = new TGraph(nPts_expExclPlusOneSigmaProspino_extra, &xPts_expExclPlusOneSigmaProspino_extra[0], &yPts_expExclPlusOneSigmaProspino_extra[0]);
+
+         TGraph *expExclPlusOneSigmaProspino = MakeBand(expExclPlusOneSigmaProspino_base, expExclPlusOneSigmaProspino_extra);
 /*
          if( topoStr == "T1" || topoStr == "T1qqqq" ){ expExclPlusOneSigmaProspino->RemovePoint(0); expExclPlusOneSigmaProspino->RemovePoint(0); }
          if( topoStr == "T1bbbb" ){ expExclPlusOneSigmaProspino->RemovePoint(0); expExclPlusOneSigmaProspino->RemovePoint(0); }
 */
          expExclPlusOneSigmaProspinoTest->Draw("colz");
+         expExclPlusOneSigmaProspino->Draw("same");
          c1->SaveAs(outDir + "/" +topoStr +"_" + region[i]+"_ExpPlusOneSigma_TestContour.pdf");
 
 // -1 Sigma
@@ -938,24 +1147,42 @@ int plot(int argc, char** argv)
             plotTools[i]->Area(expExclMinusOneSigmaProspinoTest, Mzero, Mhalf, NLOExpxSecm1sigma, xSecProspino, 1.0, doMyFill, xBinLargery, 0, expExclMinusOneSigmaProspinoSmooth);
          }
                   
-         TGraph * expExclMinusOneSigmaProspinoTMP = plotTools[i]->GetContour(expExclMinusOneSigmaProspinoTest, 3, 1, !doMyFill);
-         expExclMinusOneSigmaProspinoTMP->GetPoint(expExclMinusOneSigmaProspinoTMP->GetN()-1, tmpxgr, tmpygr);
+         TGraph * expExclMinusOneSigmaProspinoTMP_base = plotTools[i]->GetContour(expExclMinusOneSigmaProspinoTest, 3, 1, !doMyFill);
+         TGraph * expExclMinusOneSigmaProspinoTMP_extra = plotTools[i]->GetContour(expExclMinusOneSigmaProspinoTest, 3, 2, !doMyFill);
+         expExclMinusOneSigmaProspinoTMP_base->GetPoint(expExclMinusOneSigmaProspinoTMP_base->GetN()-1, tmpxgr, tmpygr);
 //         expExclMinusOneSigmaProspinoTMP->SetPoint(expExclMinusOneSigmaProspinoTMP->GetN(), tmpxgr, 0);
-         if( doSmooth ) Smooth(expExclMinusOneSigmaProspinoTMP, radiusToSmooth+10);
+         if( doSmooth ) Smooth(expExclMinusOneSigmaProspinoTMP_base, radiusToSmooth+10);
+         if( doSmooth ) Smooth(expExclMinusOneSigmaProspinoTMP_extra, radiusToSmooth+10);
 
-         std::vector<double> xPts_expExclMinusOneSigmaProspino, yPts_expExclMinusOneSigmaProspino;
-         for(int ip=0; ip<expExclMinusOneSigmaProspinoTMP->GetN(); ip++){
+         std::vector<double> xPts_expExclMinusOneSigmaProspino_base, yPts_expExclMinusOneSigmaProspino_base;
+         for(int ip=0; ip<expExclMinusOneSigmaProspinoTMP_base->GetN(); ip++){
             double xgr=-1, ygr=-1;
-            expExclMinusOneSigmaProspinoTMP->GetPoint(ip, xgr, ygr);
+            expExclMinusOneSigmaProspinoTMP_base->GetPoint(ip, xgr, ygr);
             if( xgr >= expMinusOneSigmaCutOffX ){
-               if( xgr != expMinusOneSigmaCutOffX && xPts_expExclMinusOneSigmaProspino.empty() ){
-                  xPts_expExclMinusOneSigmaProspino.push_back(expMinusOneSigmaCutOffX); yPts_expExclMinusOneSigmaProspino.push_back(ygr);
+               if( xgr != expMinusOneSigmaCutOffX && xPts_expExclMinusOneSigmaProspino_base.empty() ){
+                  xPts_expExclMinusOneSigmaProspino_base.push_back(expMinusOneSigmaCutOffX); yPts_expExclMinusOneSigmaProspino_base.push_back(ygr);
                }
-               xPts_expExclMinusOneSigmaProspino.push_back(xgr); yPts_expExclMinusOneSigmaProspino.push_back(ygr); 
+               xPts_expExclMinusOneSigmaProspino_base.push_back(xgr); yPts_expExclMinusOneSigmaProspino_base.push_back(ygr); 
             }
          }
-         int nPts_expExclMinusOneSigmaProspino = (int)xPts_expExclMinusOneSigmaProspino.size();
-         TGraph *expExclMinusOneSigmaProspino = new TGraph(nPts_expExclMinusOneSigmaProspino, &xPts_expExclMinusOneSigmaProspino[0], &yPts_expExclMinusOneSigmaProspino[0]);
+         int nPts_expExclMinusOneSigmaProspino_base = (int)xPts_expExclMinusOneSigmaProspino_base.size();
+         TGraph *expExclMinusOneSigmaProspino_base = new TGraph(nPts_expExclMinusOneSigmaProspino_base, &xPts_expExclMinusOneSigmaProspino_base[0], &yPts_expExclMinusOneSigmaProspino_base[0]);
+
+         std::vector<double> xPts_expExclMinusOneSigmaProspino_extra, yPts_expExclMinusOneSigmaProspino_extra;
+         for(int ip=0; ip<expExclMinusOneSigmaProspinoTMP_extra->GetN(); ip++){
+            double xgr=-1, ygr=-1;
+            expExclMinusOneSigmaProspinoTMP_extra->GetPoint(ip, xgr, ygr);
+            if( xgr >= expMinusOneSigmaCutOffX ){
+               if( xgr != expMinusOneSigmaCutOffX && xPts_expExclMinusOneSigmaProspino_extra.empty() ){
+                  xPts_expExclMinusOneSigmaProspino_extra.push_back(expMinusOneSigmaCutOffX); yPts_expExclMinusOneSigmaProspino_extra.push_back(ygr);
+               }
+               xPts_expExclMinusOneSigmaProspino_extra.push_back(xgr); yPts_expExclMinusOneSigmaProspino_extra.push_back(ygr);
+            }
+         }
+         int nPts_expExclMinusOneSigmaProspino_extra = (int)xPts_expExclMinusOneSigmaProspino_extra.size();
+         TGraph *expExclMinusOneSigmaProspino_extra = new TGraph(nPts_expExclMinusOneSigmaProspino_extra, &xPts_expExclMinusOneSigmaProspino_extra[0], &yPts_expExclMinusOneSigmaProspino_extra[0]);
+
+         TGraph *expExclMinusOneSigmaProspino = MakeBand(expExclMinusOneSigmaProspino_base, expExclMinusOneSigmaProspino_extra);
 /*
          if( topoStr == "T2" || topoStr == "T2qq" ){ expExclMinusOneSigmaProspino->RemovePoint(0); expExclMinusOneSigmaProspino->RemovePoint(0); }
          if( topoStr == "T5ZZInc" ){ expExclMinusOneSigmaProspino->RemovePoint(0); }
@@ -1005,31 +1232,53 @@ int plot(int argc, char** argv)
          int nPts_expExclOneThirdxSecProspino = (int)xPts_expExclOneThirdxSecProspino.size();
          TGraph *expExclOneThirdxSecProspino = new TGraph(nPts_expExclOneThirdxSecProspino, &xPts_expExclOneThirdxSecProspino[0], &yPts_expExclOneThirdxSecProspino[0]);
 
-//         expExclOneTimesxSecProspino->RemovePoint(0); expExclPlusOneSigmaProspino->RemovePoint(0); expExclMinusOneSigmaProspino->RemovePoint(0);
+         if( keyStr == "adjT2tt" ){
+            double ptx, pty;
+            expExclPlusOneSigmaProspino_extra->RemovePoint(0);
+            expExclPlusOneSigmaProspino_base->RemovePoint(0);
 
-/*
-         if( T2ttBR ==0 && keyStr == "stop" ){
-            for(int ir=0; ir<10; ir++){ expExclOneTimesxSecProspino->RemovePoint(0); }
-            for(int ir=0; ir<5; ir++){ expExclPlusOneSigmaProspino->RemovePoint(0); }
-            for(int ir=0; ir<5; ir++){ expExclMinusOneSigmaProspino->RemovePoint(0); }
+            expExclPlusOneSigmaProspino_base->GetPoint(0, ptx, pty);
+            expExclPlusOneSigmaProspino_base->SetPoint(0, ptx, -1);
+            expExclPlusOneSigmaProspino_base->GetPoint(expExclPlusOneSigmaProspino_base->GetN()-1, ptx, pty);
+            expExclPlusOneSigmaProspino_base->SetPoint(expExclPlusOneSigmaProspino_base->GetN(), ptx, -1);
 
-            for(int ir=0; ir<3; ir++){ expExclOneTimesxSecProspino->RemovePoint(expExclOneTimesxSecProspino->GetN()-1); }
-            for(int ir=0; ir<1; ir++){ expExclPlusOneSigmaProspino->RemovePoint(expExclPlusOneSigmaProspino->GetN()-1); }
-            for(int ir=0; ir<5; ir++){ expExclMinusOneSigmaProspino->RemovePoint(expExclMinusOneSigmaProspino->GetN()-1); }
-//            expExclOneTimesxSecProspino->RemovePoint(expExclOneTimesxSecProspino->GetN()-1); expExclPlusOneSigmaProspino->RemovePoint(expExclPlusOneSigmaProspino->GetN()-1); expExclMinusOneSigmaProspino->RemovePoint(expExclMinusOneSigmaProspino->GetN()-1);
-//            Smooth(expExclOneTimesxSecProspino, 4); Smooth(expExclPlusOneSigmaProspino, 4); Smooth(expExclMinusOneSigmaProspino, 4);
-            expExclOneTimesxSecProspino->GetPoint(0, tmpxgr, tmpygr); expExclOneTimesxSecProspino->SetPoint(expExclOneTimesxSecProspino->GetN()-1, tmpxgr, tmpygr);
-            expExclPlusOneSigmaProspino->GetPoint(0, tmpxgr, tmpygr); expExclPlusOneSigmaProspino->SetPoint(expExclPlusOneSigmaProspino->GetN()-1, tmpxgr, tmpygr);
-            expExclMinusOneSigmaProspino->GetPoint(0, tmpxgr, tmpygr); expExclMinusOneSigmaProspino->SetPoint(expExclMinusOneSigmaProspino->GetN()-1, tmpxgr, tmpygr);
+            expExclMinusOneSigmaProspino->GetPoint(0, ptx, pty);
+            expExclMinusOneSigmaProspino->SetPoint(0, ptx, -1);
+            expExclMinusOneSigmaProspino->GetPoint(expExclMinusOneSigmaProspino->GetN()-1, ptx, pty);
+            expExclMinusOneSigmaProspino->SetPoint(expExclMinusOneSigmaProspino->GetN(), ptx, -1);
+
+            expExclMinusOneSigmaProspino_base->GetPoint(0, ptx, pty);
+            expExclMinusOneSigmaProspino_base->SetPoint(0, ptx, -1);
+            expExclMinusOneSigmaProspino_base->GetPoint(expExclMinusOneSigmaProspino_base->GetN()-1, ptx, pty);
+            expExclMinusOneSigmaProspino_base->SetPoint(expExclMinusOneSigmaProspino_base->GetN(), ptx, -1);
+
+            expExclOneTimesxSecProspino_extra->RemovePoint(0);
+
+            expExclOneTimesxSecProspino_base->GetPoint(expExclOneTimesxSecProspino_base->GetN()-1, ptx, pty);
+            expExclOneTimesxSecProspino_base->SetPoint(expExclOneTimesxSecProspino_base->GetN(), ptx, -1); 
+            expExclOneTimesxSecProspino_extra->GetPoint(0, ptx, pty);
+            expExclOneTimesxSecProspino_extra->SetPoint(0, ptx, -1);
+            expExclOneTimesxSecProspino_extra->GetPoint(expExclOneTimesxSecProspino_extra->GetN()-1, ptx, pty);
+            expExclOneTimesxSecProspino_extra->SetPoint(expExclOneTimesxSecProspino_extra->GetN(), ptx, -1); 
+
+            expExclOneTimesxSecProspino->GetPoint(0, ptx, pty);
+            expExclOneTimesxSecProspino->SetPoint(0, ptx, -1);
+            expExclOneTimesxSecProspino->GetPoint(expExclOneTimesxSecProspino->GetN()-1, ptx, pty);
+            expExclOneTimesxSecProspino->SetPoint(expExclOneTimesxSecProspino->GetN(), ptx, -1);
          }
-*/
 
          expHistName = region[i]+"expExclOneTimesProspino"; expExclOneTimesProspinoVec[i] = (TGraph*) expExclOneTimesxSecProspino->Clone(expHistName.Data());
+         expHistName = region[i]+"expExclOneTimesProspino_base"; expExclOneTimesProspino_baseVec[i] = (TGraph*) expExclOneTimesxSecProspino_base->Clone(expHistName.Data());
+         expHistName = region[i]+"expExclOneTimesProspino_extra"; expExclOneTimesProspino_extraVec[i] = (TGraph*) expExclOneTimesxSecProspino_extra->Clone(expHistName.Data());
          expHistName = region[i]+"expExclThreeTimesProspino"; expExclThreeTimesProspinoVec[i] = (TGraph*) expExclThreeTimesxSecProspino->Clone(expHistName.Data());
          expHistName = region[i]+"expExclOneThirdProspino"; expExclOneThirdProspinoVec[i] = (TGraph*) expExclOneThirdxSecProspino->Clone(expHistName.Data());
 
          expHistName = region[i]+"expExclPlusOneSigmaProspino"; expExclPlusOneSigmaProspinoVec[i] = (TGraph*) expExclPlusOneSigmaProspino->Clone(expHistName.Data());
+         expHistName = region[i]+"expExclPlusOneSigmaProspino_base"; expExclPlusOneSigmaProspino_baseVec[i] = (TGraph*) expExclPlusOneSigmaProspino_base->Clone(expHistName.Data());
+         expHistName = region[i]+"expExclPlusOneSigmaProspino_extra"; expExclPlusOneSigmaProspino_extraVec[i] = (TGraph*) expExclPlusOneSigmaProspino_extra->Clone(expHistName.Data());
          expHistName = region[i]+"expExclMinusOneSigmaProspino"; expExclMinusOneSigmaProspinoVec[i] = (TGraph*) expExclMinusOneSigmaProspino->Clone(expHistName.Data());
+         expHistName = region[i]+"expExclMinusOneSigmaProspino_base"; expExclMinusOneSigmaProspino_baseVec[i] = (TGraph*) expExclMinusOneSigmaProspino_base->Clone(expHistName.Data());
+         expHistName = region[i]+"expExclMinusOneSigmaProspino_extra"; expExclMinusOneSigmaProspino_extraVec[i] = (TGraph*) expExclMinusOneSigmaProspino_extra->Clone(expHistName.Data());
 
          minExpExclNLOcloned->SetMinimum(0.001);
          minExpExclNLOcloned->SetMaximum(20);
@@ -1076,6 +1325,9 @@ int plot(int argc, char** argv)
    }else if( topoStr == "T2tt" ){
       hexcl = new TH2F("hexcl",";m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
       hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
+   }else if( topoStr == "T2tb" ){
+      hexcl = new TH2F("hexcl",";m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+      hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; #tilde{t}#rightarrow b#tilde{#chi}^{#pm}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
    }else if( topoStr == "TGQ" ){
       hexcl = new TH2F("hexcl",";m_{#tilde{g}} [GeV]; m_{#tilde{q}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
       hexcl->SetTitle("pp#rightarrow#tilde{q}#tilde{g}, #tilde{q}#rightarrow q#tilde{#chi}^{0}, #tilde{g}#rightarrow qq#tilde{#chi}^{0}");
@@ -1085,9 +1337,24 @@ int plot(int argc, char** argv)
    }else if( topoStr == "T1tttt" ){
       hexcl = new TH2F("hexcl",";m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
       hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+   }else if( topoStr == "T1ttbb" ){
+      hexcl = new TH2F("hexcl",";m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
    }else if( topoStr == "T1bbbb" ){
       hexcl = new TH2F("hexcl",";m(#tilde{g}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
       hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow bb#tilde{#chi}^{0}#; m(#tilde{b})>>m(#tilde{g})");
+   }else if( topoStr == "T5ttcc" ){
+      hexcl = new TH2F("hexcl",";m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+   }else if( topoStr == "T5ttttDM175" ){
+      hexcl = new TH2F("hexcl",";m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+   }else if( topoStr == "T5tttt_degen" ){
+      hexcl = new TH2F("hexcl",";m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
+   }else if( topoStr == "T6ttWW" ){
+      hexcl = new TH2F("hexcl",";m_{#tilde{b}} [GeV]; m_{#tilde{#chi}^{#pm}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g})");
    }
 
 /*
@@ -1135,14 +1402,26 @@ int plot(int argc, char** argv)
       hexcl->SetTitle("pp#rightarrow#tilde{q}#tilde{q}, #tilde{q}#rightarrow q#tilde{#chi}^{0}#; m(#tilde{g})>>m(#tilde{q});m_{#tilde{q}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
    }else if( topoStr == "T2tt" ){
       hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0});m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
+   }else if( topoStr == "T2tb" ){
+      hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; #tilde{t}#rightarrow b#tilde{#chi}^{#pm}#; m(#tilde{t})>m(#tilde{#chi}^{0});m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
    }else if( topoStr == "TGQ" ){
       hexcl->SetTitle("pp#rightarrow#tilde{q}#tilde{g}, #tilde{q}#rightarrow q#tilde{#chi}^{0}, #tilde{g}#rightarrow qq#tilde{#chi}^{0};m_{#tilde{g}} [GeV]; m_{#tilde{q}} [GeV]; 95% CL Expected Limit [pb]");
    }else if( topoStr == "T5ZZInc" ){
       hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow qq#tilde{#chi}^{0}_{2}, #tilde{#chi}^{0}_{2}#rightarrow Z#tilde{#chi}^{0}; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
    }else if( topoStr == "T1tttt" ){
       hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g}); m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
+   }else if( topoStr == "T1ttbb" ){
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g}); m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
    }else if( topoStr == "T1bbbb" ){
       hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow bb#tilde{#chi}^{0}#; m(#tilde{b})>>m(#tilde{g})");
+   }else if( topoStr == "T5ttcc" ){
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g}); m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
+   }else if( topoStr == "T5ttttDM175" ){
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g}); m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
+   }else if( topoStr == "T5tttt_degen" ){
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g}); m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
+   }else if( topoStr == "T6ttWW" ){
+      hexcl->SetTitle("pp#rightarrow#tilde{g}#tilde{g}, #tilde{g}#rightarrow tt#tilde{#chi}^{0}#; m(#tilde{t})>>m(#tilde{g}); m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
    }
 
 
@@ -1302,10 +1581,42 @@ int plot(int argc, char** argv)
    }
    c2->Print(outDir + "/" + topoStr + "_" + "ratio_limits_mMother_mLSP.pdf]");
 
+// Define the box and lines
+
+   const Int_t np = 2;
+
+   Double_t xcb[np], ycb[np], ycbmin[np], ycbmax[np];
+
+   xcb[0]=150.; ycb[0]=-25.; ycbmin[0]=-50.; ycbmax[0]=0.; 
+
+   xcb[1]=650.; ycb[1]=475.; ycbmin[1]=450.; ycbmax[1]=500.;
+
+   if(topoStr == "T2tb"){
+      ycbmax[0] = 50.; ycbmax[1] = 550.;
+   }
+
+   TGraph *grmin = new TGraph(np,xcb,ycbmin);
+   TGraph *grmax = new TGraph(np,xcb,ycbmax);
+   TGraph *gr    = new TGraph(np,xcb,ycb);
+
+   diagonalCoverBand = new TGraph(2*np);
+   diagonalCoverBand->SetName("diagonalCoverBand");
+
+   for (int ip=0; ip<np; ip++) {
+      diagonalCoverBand->SetPoint(ip,xcb[ip],ycbmax[ip]);
+      diagonalCoverBand->SetPoint(np+ip,xcb[np-ip-1],ycbmin[np-ip-1]);
+   }
+   diagonalCoverBand->SetFillColor(0);
+
+//   TLatex tl; tl.SetTextFont(43); tl.SetTextSize(18); tl.SetTextAngle(47.);
+//   tl.DrawLatex(425.,263.,"m_{#tilde{t}} = m_{t} + m_{#tilde{#chi}_{1}^{0}}");
+
    sprintf(tmpStr, "CLs_SMS_BR%02dpct.root", int(T2ttBR*100));
    TFile *outRootFile = new TFile(outDir+"/"+tmpStr, "RECREATE");
 
    diagonalGraph->Write();
+   diagonalCoverBand->Write();
+
    for(int i=0; i<nTotPlots; i++){
       if( i!= nTotPlots -1 ) continue;
 
@@ -1313,22 +1624,49 @@ int plot(int argc, char** argv)
       sprintf(tmpStr, "%s_BR%dpct", explimitVec[i]->GetName(), int(T2ttBR*100)); explimitVec[i]->SetName(tmpStr);
          
       sprintf(tmpStr, "%s_BR%dpct", obsExclOneTimesProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclOneTimesProspinoVec[i]->SetName(tmpStr);
-      sprintf(tmpStr, "%s_BR%dpct", obsExclThreeTimesProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclThreeTimesProspinoVec[i]->SetName(tmpStr);
-      sprintf(tmpStr, "%s_BR%dpct", obsExclOneThirdProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclOneThirdProspinoVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", obsExclOneTimesProspino_baseVec[i]->GetName(), int(T2ttBR*100)); obsExclOneTimesProspino_baseVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", obsExclOneTimesProspino_extraVec[i]->GetName(), int(T2ttBR*100)); obsExclOneTimesProspino_extraVec[i]->SetName(tmpStr);
+
       sprintf(tmpStr, "%s_BR%dpct", expExclOneTimesProspinoVec[i]->GetName(), int(T2ttBR*100)); expExclOneTimesProspinoVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", expExclOneTimesProspino_baseVec[i]->GetName(), int(T2ttBR*100)); expExclOneTimesProspino_baseVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", expExclOneTimesProspino_extraVec[i]->GetName(), int(T2ttBR*100)); expExclOneTimesProspino_extraVec[i]->SetName(tmpStr);
+
+      sprintf(tmpStr, "%s_BR%dpct", expExclPlusOneSigmaProspinoVec[i]->GetName(), int(T2ttBR*100)); expExclPlusOneSigmaProspinoVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", expExclPlusOneSigmaProspino_baseVec[i]->GetName(), int(T2ttBR*100)); expExclPlusOneSigmaProspino_baseVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", expExclPlusOneSigmaProspino_extraVec[i]->GetName(), int(T2ttBR*100)); expExclPlusOneSigmaProspino_extraVec[i]->SetName(tmpStr);
+
+      sprintf(tmpStr, "%s_BR%dpct", expExclMinusOneSigmaProspinoVec[i]->GetName(), int(T2ttBR*100)); expExclMinusOneSigmaProspinoVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", expExclMinusOneSigmaProspino_baseVec[i]->GetName(), int(T2ttBR*100)); expExclMinusOneSigmaProspino_baseVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", expExclMinusOneSigmaProspino_extraVec[i]->GetName(), int(T2ttBR*100)); expExclMinusOneSigmaProspino_extraVec[i]->SetName(tmpStr);
+
+      sprintf(tmpStr, "%s_BR%dpct", obsExclPlusSysErrProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclPlusSysErrProspinoVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", obsExclPlusSysErrProspino_baseVec[i]->GetName(), int(T2ttBR*100)); obsExclPlusSysErrProspino_baseVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", obsExclPlusSysErrProspino_extraVec[i]->GetName(), int(T2ttBR*100)); obsExclPlusSysErrProspino_extraVec[i]->SetName(tmpStr);
+
+      sprintf(tmpStr, "%s_BR%dpct", obsExclMinusSysErrProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclMinusSysErrProspinoVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", obsExclMinusSysErrProspino_baseVec[i]->GetName(), int(T2ttBR*100)); obsExclMinusSysErrProspino_baseVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", obsExclMinusSysErrProspino_extraVec[i]->GetName(), int(T2ttBR*100)); obsExclMinusSysErrProspino_extraVec[i]->SetName(tmpStr);
+
       sprintf(tmpStr, "%s_BR%dpct", expExclThreeTimesProspinoVec[i]->GetName(), int(T2ttBR*100)); expExclThreeTimesProspinoVec[i]->SetName(tmpStr);
       sprintf(tmpStr, "%s_BR%dpct", expExclOneThirdProspinoVec[i]->GetName(), int(T2ttBR*100)); expExclOneThirdProspinoVec[i]->SetName(tmpStr);
-      sprintf(tmpStr, "%s_BR%dpct", expExclPlusOneSigmaProspinoVec[i]->GetName(), int(T2ttBR*100)); expExclPlusOneSigmaProspinoVec[i]->SetName(tmpStr);
-      sprintf(tmpStr, "%s_BR%dpct", expExclMinusOneSigmaProspinoVec[i]->GetName(), int(T2ttBR*100)); expExclMinusOneSigmaProspinoVec[i]->SetName(tmpStr);
-      sprintf(tmpStr, "%s_BR%dpct", obsExclPlusSysErrProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclPlusSysErrProspinoVec[i]->SetName(tmpStr);
-      sprintf(tmpStr, "%s_BR%dpct", obsExclMinusSysErrProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclMinusSysErrProspinoVec[i]->SetName(tmpStr);
+
+      sprintf(tmpStr, "%s_BR%dpct", obsExclThreeTimesProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclThreeTimesProspinoVec[i]->SetName(tmpStr);
+      sprintf(tmpStr, "%s_BR%dpct", obsExclOneThirdProspinoVec[i]->GetName(), int(T2ttBR*100)); obsExclOneThirdProspinoVec[i]->SetName(tmpStr);
 
       obslimitVec[i]->Write(); explimitVec[i]->Write();
-         
-      obsExclOneTimesProspinoVec[i]->Write(); obsExclThreeTimesProspinoVec[i]->Write(); obsExclOneThirdProspinoVec[i]->Write();
-      expExclOneTimesProspinoVec[i]->Write(); expExclThreeTimesProspinoVec[i]->Write(); expExclOneThirdProspinoVec[i]->Write();
-      expExclPlusOneSigmaProspinoVec[i]->Write(); expExclMinusOneSigmaProspinoVec[i]->Write();
-      obsExclPlusSysErrProspinoVec[i]->Write(); obsExclMinusSysErrProspinoVec[i]->Write();
+
+      if( keyStr != "raw" ){         
+         obsExclOneTimesProspinoVec[i]->Write(); obsExclOneTimesProspino_baseVec[i]->Write(); obsExclOneTimesProspino_extraVec[i]->Write();
+         //obsExclThreeTimesProspinoVec[i]->Write(); obsExclOneThirdProspinoVec[i]->Write();
+         expExclOneTimesProspinoVec[i]->Write(); expExclOneTimesProspino_baseVec[i]->Write(); expExclOneTimesProspino_extraVec[i]->Write();
+         //expExclThreeTimesProspinoVec[i]->Write(); expExclOneThirdProspinoVec[i]->Write();
+
+         expExclPlusOneSigmaProspinoVec[i]->Write(); expExclPlusOneSigmaProspino_baseVec[i]->Write(); expExclPlusOneSigmaProspino_extraVec[i]->Write();
+         expExclMinusOneSigmaProspinoVec[i]->Write(); expExclMinusOneSigmaProspino_baseVec[i]->Write(); expExclMinusOneSigmaProspino_extraVec[i]->Write();
+
+         obsExclPlusSysErrProspinoVec[i]->Write(); obsExclPlusSysErrProspino_baseVec[i]->Write(); obsExclPlusSysErrProspino_extraVec[i]->Write(); 
+         obsExclMinusSysErrProspinoVec[i]->Write(); obsExclMinusSysErrProspino_baseVec[i]->Write(); obsExclMinusSysErrProspino_extraVec[i]->Write();
+      }
    }
    outRootFile->Write(); outRootFile->Close();
 
