@@ -1,9 +1,7 @@
 import sys
 from inputFile import *
-from smsPlotXSEC import *
-from smsPlotCONT import *
-from smsPlotBrazil import *
-from smsPlotXSECaddRealExp import *
+from plotBinaryLimits import *
+import ROOT as rt
 
 if __name__ == '__main__':
     # read input arguments
@@ -16,22 +14,18 @@ if __name__ == '__main__':
     fileIN = inputFile(filename)
 
     # classic temperature histogra
-    xsecPlot = smsPlotXSEC(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "", fileIN.SPECIAL)
+    xsecPlot = plotBinaryLimits(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "", fileIN.SPECIAL)
     xsecPlot.Draw()
 
     inputfile = open(filename)
     for line in inputfile:
        tmpLINE =  line[:-1].split(" ")
-       if tmpLINE[0] != "SPECIAL": continue
-       foundCovered = False
-       for objName in tmpLINE[2:]:
-          if "diagonalCoverBand" in objName: foundCovered = True
+       if tmpLINE[0] != "HISTOGRAM": continue
+       if "exp" in tmpLINE[2] or "EXP" in tmpLINE[2]:
+          xsecPlot.Save("EXP_%s_binary_XSEC" %outputname)
+       else:
+          xsecPlot.Save("OBS_%s_binary_XSEC" %outputname)
     inputfile.close()
-       
-    if foundCovered:
-       xsecPlot.Save("Covered_%sXSEC" %outputname)
-    else:
-       xsecPlot.Save("%sXSEC" %outputname)
 
     # only lines
 #    contPlot = smsPlotCONT(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "", fileIN.SPECIAL)
