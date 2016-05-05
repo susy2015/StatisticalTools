@@ -1,0 +1,4 @@
+# https://twiki.cern.ch/twiki/bin/view/CMS/HiggsWG/HiggsPAGPreapprovalChecks
+combine -M MaxLikelihoodFit allComb_375_200.txt --saveShapes --saveWithUncertainties -v 3 >& log_combine_375_200.lg
+mv mlfit.root mlfit_375_200.root
+python diffNuisances.py mlfit_375_200.root -g outputfile_375_200.root -a > output_375_200.txt
