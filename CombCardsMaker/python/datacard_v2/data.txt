@@ -1,8 +1,0 @@
-# The words after "#" are comments. No need to remove them.
-luminosity = 2153.74   # in pb-1 (FIXED)
-channels = 45          # total number of channels -> following our search bin definition (FIXED)
-sample = data          # name of the background: hadtau, lostle, zinv, qcd, ttz
-
-channel = bin1 bin2 bin3 bin4 bin5 bin6 bin7 bin8 bin9 bin10 bin11 bin12 bin13 bin14 bin15 bin16 bin17 bin18 bin19 bin20 bin21 bin22 bin23 bin24 bin25 bin26 bin27 bin28 bin29 bin30 bin31 bin32 bin33 bin34 bin35 bin36 bin37 bin38 bin39 bin40 bin41 bin42 bin43 bin44 bin45
-# Predicted central numbers (need from all backgrounds)
-rate = 34 15 46 43 3 45 67 50 79 19 88 69 83 33 58 8 80 60 97 94 14 40 30 44 52 4 2 37 9 55 85 21 23 76 64 17 0 89 26 65 32 39 48 42 93
