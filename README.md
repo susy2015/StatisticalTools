@@ -11,7 +11,7 @@
 
   cd batch_T2tt_37Bins/flatNtp_v6/
 
-  ln -s /uscms_data/d3/lhx/tasks/recipes/prepare2015/OTHERS/dev_for_v4_7415/src/SusyAnaTools/Tools/condor/signalScan/prod_T2tt_37Bins/v3_add_data_vs_mc_tagger_unc signalCards
+  ln -s /uscms_data/d3/lhx/publik/for_StatisticalTools/v3_add_data_vs_mc_tagger_unc signalCards
 
   ./batchCombJobs.py -s signalCards -o prod >& log_prod.lg&
 
