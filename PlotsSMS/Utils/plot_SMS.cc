@@ -49,11 +49,11 @@ TString topoStr = "T1";
 TString keyStr;
 
 // 25 GeV per X bin; 25 GeV per Y bin
-int nXbins = 52, nYbins = 49;
+int nXbins = 65, nYbins = 73;
 //const double loX = 100, hiX = 1225;
 //const double loY = 50, hiY = 1225;
-double loX = 612.5, hiX = 1912.5;
-double loY = -12.5, hiY = 1212.5;
+double loX = 587.5, hiX = 2212.5;
+double loY = -12.5, hiY = 1812.5;
 
 int nXbinsLG = 52, nYbinsLG = 49;
 double loXLG = 612.5, hiXLG = 1912.5;
@@ -122,13 +122,13 @@ int plot(int argc, char** argv)
 
 // 25 GeV per X bin; 25 GeV per Y bin
    if( topoStr == "T2tt" || topoStr == "T2tb" ){
-      nXbins = 35; nYbins = 22;
-      loX =  87.5; hiX = 962.5;
-      loY = -12.5; hiY = 537.5;
+      nXbins = 47; nYbins = 34;
+      loX =  87.5; hiX = 1262.5;
+      loY = -12.5; hiY = 837.5;
  
-      nXbinsLG = 32; nYbinsLG = 22;
-      loXLG = 112.5; hiXLG = 912.5;
-      loYLG = -12.5; hiYLG = 537.5;
+      nXbinsLG = 47; nYbinsLG = 34;
+      loXLG =  87.5; hiXLG = 1262.5;
+      loYLG = -12.5; hiYLG = 837.5;
    }
    if( topoStr == "T6ttWW" ){
       nXbins = 27; nYbins = 36;
@@ -1587,24 +1587,27 @@ int plot(int argc, char** argv)
 
    Double_t xcb[np], ycb[np], ycbmin[np], ycbmax[np];
 
-   xcb[0]=150.; ycb[0]=-25.; ycbmin[0]=-50.; ycbmax[0]=0.; 
+   xcb[0]=150.; ycbmin[0]=-50.; ycbmax[0]=0.; 
 
-   xcb[1]=650.; ycb[1]=475.; ycbmin[1]=450.; ycbmax[1]=500.;
+   xcb[1]=262.5; ycbmin[1]=100.; ycbmax[1]=112.5;
 
    if(topoStr == "T2tb"){
-      ycbmax[0] = 50.; ycbmax[1] = 550.;
+//      ycbmax[0] = 50.; ycbmax[1] = 550.;
+      ycbmin[1] = 97.5;
    }
 
    TGraph *grmin = new TGraph(np,xcb,ycbmin);
    TGraph *grmax = new TGraph(np,xcb,ycbmax);
-   TGraph *gr    = new TGraph(np,xcb,ycb);
 
    diagonalCoverBand = new TGraph(2*np);
    diagonalCoverBand->SetName("diagonalCoverBand");
 
    for (int ip=0; ip<np; ip++) {
       diagonalCoverBand->SetPoint(ip,xcb[ip],ycbmax[ip]);
-      diagonalCoverBand->SetPoint(np+ip,xcb[np-ip-1],ycbmin[np-ip-1]);
+      if( ip ==0 )
+         diagonalCoverBand->SetPoint(np+ip,xcb[np-ip-1]+37.5,ycbmin[np-ip-1]);
+      else 
+         diagonalCoverBand->SetPoint(np+ip,xcb[np-ip-1],ycbmin[np-ip-1]);
    }
    diagonalCoverBand->SetFillColor(0);
 
