@@ -1,7 +1,7 @@
 # StatisticalTools
 ==> To produce the limits using the Higgs combination tool
 
-] Following the https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideHiggsAnalysisCombinedLimit#ROOT5_SLC6_release_CMSSW_7_1_X to checkout the Higgs combination tool
+] Following the https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideHiggsAnalysisCombinedLimit#ROOT6_SLC6_release_CMSSW_7_4_X to checkout the Higgs combination tool
 
 ] git clone git@github.com:susy2015/StatisticalTools.git
 

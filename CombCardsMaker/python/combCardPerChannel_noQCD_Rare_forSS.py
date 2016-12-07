@@ -71,7 +71,7 @@ def procline(inputline):
          outline.append(each)
    return outline
 
-def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_file ="hadtau.txt", zinv_file="zinv.txt", qcd_file="qcd.txt", ttz_file="ttz.txt", rare_file="rare.txt", data_file="data.txt", signal_file ="signal.txt"):
+def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_file ="hadtau.txt", zinv_file="zinv.txt", ttz_file="ttz.txt", data_file="data.txt", signal_file ="signal.txt"):
 
    del glb_data_rate[:]
    del glb_lostle_rate[:]
@@ -176,7 +176,7 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
       else:
          outfile_perchn = open(outbase_filename + "_ch" + str(chn) + ".txt", "w")
       outfile_perchn.write("imax 1 # number of channels\n")
-      outfile_perchn.write("jmax 8 # number of backgrounds\n")
+      outfile_perchn.write("jmax 6 # number of backgrounds\n")
       outfile_perchn.write("kmax * nuissance\n")
       outfile_perchn.write("shapes * * FAKE\n")
       outfile_perchn.write("----------------\n")
@@ -193,12 +193,12 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
       h1_data.SetBinError(chn, math.sqrt(float(data_rate)))
 
       outfile_perchn.write("bin       ")
-      for ibkg in range(9):
+      for ibkg in range(7):
          outfile_perchn.write("bin%d "% (chn))
       outfile_perchn.write("\n")
 
-      outfile_perchn.write("process   Sig  LostLep  LostLepHighW  HadTau  HadTauHighW  Zinv  QCD  TTZ  RARE\n")
-      outfile_perchn.write("process     0        1            2       3           4     5    6    7    8\n")
+      outfile_perchn.write("process   Sig  LostLep  LostLepHighW  HadTau  HadTauHighW  Zinv  TTZ\n")
+      outfile_perchn.write("process     0        1            2       3           4     5    6  \n")
       outfile_perchn.write("rate      ")
 
       signal_file.seek(0, 0)
@@ -260,37 +260,6 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
       h1_zinv.SetBinContent(chn, zinv_rate)
       h1_zinv_syst.SetBinContent(chn, zinv_rate)
  
-      qcd_file.seek(0, 0)
-      for qcd_line in qcd_file:
-         qcd_splitline = procline(qcd_line)
-         if qcd_splitline and qcd_splitline[0] == "QCD_Data_CS":
-            qcd_cs = float(qcd_splitline[chn])
-         if qcd_splitline and qcd_splitline[0] == "QCD_TFactor":
-            qcd_tfactor = float(qcd_splitline[chn])
-            qcd_tfactor_str = qcd_splitline[chn]
-         if qcd_splitline and qcd_splitline[0] == "QCD_otherBG_CS":
-            tmp_qcd_contam_pred = float(qcd_splitline[chn])
-      if qcd_cs != 0:
-         outfile_perchn.write("%.4f  " % (qcd_cs*qcd_tfactor))
-      else:
-         outfile_perchn.write("%.4f  " % qcd_tfactor)
-      if (qcd_cs-tmp_qcd_contam_pred)*qcd_tfactor >= 0: qcd_corr_rate = (qcd_cs-tmp_qcd_contam_pred)*qcd_tfactor
-      else: qcd_corr_rate = 0
-      pred_tot_rate += qcd_corr_rate
-
-      h1_qcd.SetBinContent(chn, qcd_corr_rate)
-      h1_qcd_syst.SetBinContent(chn, qcd_corr_rate)
- 
-      qcd_stat_unc_avg = math.sqrt(qcd_cs) * qcd_tfactor 
-      prt_qcd_stat_unc_up = math.sqrt(qcd_cs) * qcd_tfactor
-      prt_qcd_stat_unc_dn = math.sqrt(qcd_cs) * qcd_tfactor
-      if qcd_cs ==0 : 
-         qcd_stat_unc_avg = 1.84 * qcd_tfactor
-         prt_qcd_stat_unc_up = 1.84 * qcd_tfactor
-         prt_qcd_stat_unc_dn = 0.0
-      pred_tot_stat += qcd_stat_unc_avg*qcd_stat_unc_avg 
-      h1_qcd.SetBinError(chn, qcd_stat_unc_avg)
- 
       ttz_file.seek(0, 0)
       for ttz_line in ttz_file:
          ttz_splitline = procline(ttz_line)
@@ -302,18 +271,6 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
 
       h1_ttz.SetBinContent(chn, ttz_rate)
       h1_ttz_syst.SetBinContent(chn, ttz_rate)
- 
-      rare_file.seek(0, 0)
-      for rare_line in rare_file:
-         rare_splitline = procline(rare_line)
-         if rare_splitline and rare_splitline[0] == "rate":
-            rare_rate = float(rare_splitline[chn])
-      outfile_perchn.write("%.5f  " % (rare_rate))
-      outfile_perchn.write("\n")
-      pred_tot_rate += rare_rate
-
-      h1_rare.SetBinContent(chn, rare_rate)
-      h1_rare_syst.SetBinContent(chn, rare_rate)
  
       outfile_perchn.write("---------------------------------------\n")
 # signal stat. unc.
@@ -424,29 +381,6 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
 #      ttz_stat_approx_square = ttz_cs_event * 2 # 291495 - 106505 gets roughly 3:1 for pos:neg
 #      ttz_stat_approx_rel = math.sqrt(ttz_stat_approx_square)/ttz_cs_event
 #      outfile_perchn.write("ttz_stat_unc_chn%d  lnN - - - - - - - %0.4f -\n" % (chn, 1+ttz_stat_approx_rel))
-
-# rare stat. unc.
-      rare_file.seek(0, 0)
-      for rare_line in rare_file:
-         rare_splitline = procline(rare_line)
-         if rare_splitline and rare_splitline[0] == "cs_event":
-            rare_cs_event = float(rare_splitline[chn])
-         if rare_splitline and rare_splitline[0] == "avg_weight":
-            rare_avg_weight = float(rare_splitline[chn])
-
-      rare_stat_unc_avg = math.sqrt(rare_cs_event) * rare_avg_weight
-      prt_rare_stat_unc_up = math.sqrt(rare_cs_event) * rare_avg_weight
-      prt_rare_stat_unc_dn = math.sqrt(rare_cs_event) * rare_avg_weight
-      if rare_cs_event == 0: 
-         rare_stat_unc_avg = 1.84 * rare_avg_weight
-         prt_rare_stat_unc_up = 1.84 * rare_avg_weight
-         prt_rare_stat_unc_up = 0.0
-      pred_tot_stat += rare_stat_unc_avg*rare_stat_unc_avg
- 
-      h1_rare.SetBinError(chn, rare_stat_unc_avg)
-
-      if int(channels) != 45: 
-         outfile_perchn.write("rare_stat_unc_chn%d  gmN %0.0f - - - - - - - - %0.5f\n" % (chn, rare_cs_event, rare_avg_weight))
 
       pred_tot_stat = math.sqrt(pred_tot_stat)
 
@@ -956,34 +890,6 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
 #      outfile_perchn.write("zinv_trig   lnN - - - - - %.4f/%.4f - - -\n" % (1-zinv_syst_trig_dn_rel, 1+zinv_syst_trig_up_rel))
       outfile_perchn.write("zinv_syst_norm_scale_pdf_trig_btag_bmistag   lnN - - - - - %.4f/%.4f - - -\n" % (1-zinv_syst_norm_scale_pdf_trig_btag_bmistag_dn_rel, 1+zinv_syst_norm_scale_pdf_trig_btag_bmistag_up_rel))
 
-# qcd
-      qcd_file.seek(0, 0)
-      for qcd_line in qcd_file:
-         qcd_splitline = procline(qcd_line)
-         if qcd_splitline and qcd_splitline[0] == "QCD_TFactor_relative_err":
-            qcd_tfactor_err_rel = float(qcd_splitline[chn])
-         if qcd_splitline and qcd_splitline[0] == "QCD_NonClosure_relative_err":
-            qcd_nonclosure_err_rel = float(qcd_splitline[chn])
-
-      qcd_syst_unc_avg = math.sqrt( qcd_tfactor_err_rel*qcd_tfactor_err_rel + qcd_nonclosure_err_rel*qcd_nonclosure_err_rel )
-
-      prt_qcd_syst_unc_up = qcd_corr_rate * math.sqrt( qcd_tfactor_err_rel*qcd_tfactor_err_rel + qcd_nonclosure_err_rel*qcd_nonclosure_err_rel )
-      prt_qcd_syst_unc_dn = qcd_corr_rate * math.sqrt( qcd_tfactor_err_rel*qcd_tfactor_err_rel + qcd_nonclosure_err_rel*qcd_nonclosure_err_rel )
-
-      h1_qcd_syst.SetBinError(chn, qcd_corr_rate*qcd_syst_unc_avg)
-
-      if qcd_tfactor_str in qcd_tfactor_dict:
-         qcd_tfactor_idx = qcd_tfactor_dict[qcd_tfactor_str]
-      else:
-         qcd_tfactor_dict[qcd_tfactor_str] = qcd_tfactor_cnt
-         qcd_tfactor_idx = qcd_tfactor_cnt
-         qcd_tfactor_cnt += 1 
-
-      outfile_perchn.write("qcd_tfactor_chn%d   lnN - - - - - - %.4f -  -\n" % (qcd_tfactor_idx, 1+qcd_tfactor_err_rel)) 
-      outfile_perchn.write("qcd_nonclosure_chn%d   lnN - - - - - - %.4f -  -\n" % (chn, 1+qcd_nonclosure_err_rel)) 
-#      outfile_perchn.write("qcd_nonclosure   lnN - - - - - - %.4f -  -\n" % (1+qcd_nonclosure_err_rel)) 
-      outfile_perchn.write("ivtDphiCR_chn%d   lnU - - - - - - 10 -  -\n" % (chn))
-
 # ttz
       ttz_file.seek(0, 0)
       for ttz_line in ttz_file:
@@ -1038,47 +944,6 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
       outfile_perchn.write("ttz_pdf_scale   lnN - - - - - - - %.4f -\n" % (1+ttz_syst_pdf_scale_avg_rel)) 
       outfile_perchn.write("ttz_rate   lnN - - - - - - - %.4f/%.4f -\n" % (1-ttz_syst_rate_dn_rel, 1+ttz_syst_rate_up_rel)) 
 
-# rare
-      rare_file.seek(0, 0)
-      for rare_line in rare_file:
-         rare_splitline = procline(rare_line)
-         if rare_splitline and rare_splitline[0] == "syst_unc_pdf_up":
-            rare_syst_pdf_up = float(rare_splitline[chn])
-            if rare_rate !=0: rare_syst_pdf_up_rel = rare_syst_pdf_up/rare_rate
-         if rare_splitline and rare_splitline[0] == "syst_unc_pdf_down":
-            rare_syst_pdf_dn = float(rare_splitline[chn])
-            if rare_rate !=0: rare_syst_pdf_dn_rel = rare_syst_pdf_dn/rare_rate
-
-         if rare_splitline and rare_splitline[0] == "syst_unc_scale_up":
-            rare_syst_scale_up = float(rare_splitline[chn])
-            if rare_rate !=0: rare_syst_scale_up_rel = rare_syst_scale_up/rare_rate
-         if rare_splitline and rare_splitline[0] == "syst_unc_scale_down":
-            rare_syst_scale_dn = float(rare_splitline[chn])
-            if rare_rate !=0: rare_syst_scale_dn_rel = rare_syst_scale_dn/rare_rate
-
-      rare_syst_pdf_avg = (rare_syst_pdf_up + rare_syst_pdf_dn)*0.5
-      rare_syst_scale_avg = (rare_syst_scale_up + rare_syst_scale_dn)*0.5
-
-      rare_syst_unc_avg = math.sqrt( rare_syst_pdf_avg*rare_syst_pdf_avg + rare_syst_scale_avg*rare_syst_scale_avg )
-
-      prt_rare_syst_unc_up = math.sqrt( rare_syst_pdf_up*rare_syst_pdf_up + rare_syst_scale_up*rare_syst_scale_up )
-      prt_rare_syst_unc_dn = math.sqrt( rare_syst_pdf_dn*rare_syst_pdf_dn + rare_syst_scale_dn*rare_syst_scale_dn )
-      if prt_rare_syst_unc_dn > rare_rate : prt_rare_syst_unc_dn = rare_rate
-
-      h1_rare_syst.SetBinError(chn, rare_syst_unc_avg)
-
-      rare_syst_pdf_scale_dn_rel = math.sqrt( rare_syst_pdf_dn_rel*rare_syst_pdf_dn_rel + rare_syst_scale_dn_rel*rare_syst_scale_dn_rel )
-      rare_syst_pdf_scale_up_rel = math.sqrt( rare_syst_pdf_up_rel*rare_syst_pdf_up_rel + rare_syst_scale_up_rel*rare_syst_scale_up_rel )
-
-      rare_syst_pdf_scale_avg_rel = (rare_syst_pdf_scale_dn_rel + rare_syst_pdf_scale_up_rel)*0.5
-
-      if rare_syst_pdf_dn_rel == 1: rare_syst_pdf_dn_rel -= 0.001
-      if rare_syst_scale_dn_rel == 1: rare_syst_scale_dn_rel -= 0.001
-
-      if rare_syst_pdf_scale_dn_rel == 1: rare_syst_pdf_scale_dn_rel -= 0.001
-
-      outfile_perchn.write("rare_pdf_scale   lnN - - - - - - - - %.5f\n" % (1+rare_syst_pdf_scale_avg_rel)) 
-
       outfile_perchn.close()
 # Modify the data card to make only expected limits
       if doExpLimitOnly:
@@ -1127,92 +992,33 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
       LLHadTau_stat_HighW_file_perchn.write("---------------------------------\n")
       LLHadTau_stat_HighW_file_perchn.write("stat_unc_HighW_chn%d    lnU - - - 10 10\n" % (chn))
 
-# Additional output file for QCD
-      if len(outputdir) !=0:
-         qcd_outfile_perchn = open(outputdir + "/comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
-      else:
-         qcd_outfile_perchn = open("comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
-
-      qcd_file.seek(0, 0)
-      for qcd_line in qcd_file:
-         qcd_splitline = procline(qcd_line)
-         if qcd_splitline and qcd_splitline[0] == "QCD_TFactor_err":
-            qcd_tfactor_err = float(qcd_splitline[chn])
-         if qcd_splitline:
-            if qcd_splitline[0] == "QCD_otherBG_CS":
-               qcd_contam_pred = float(qcd_splitline[chn])
-
-            if qcd_splitline[0] == "QCD_otherBG_CS_relative_errup":
-               qcd_contam_unc_up_rel = float(qcd_splitline[chn])
-            if qcd_splitline[0] == "QCD_otherBG_CS_relative_errdown":
-               qcd_contam_unc_dn_rel = float(qcd_splitline[chn])
-
-      qcd_outfile_perchn.write("imax 1 # number of channels\n")
-      qcd_outfile_perchn.write("jmax 2 # number of backgrounds\n")
-      qcd_outfile_perchn.write("kmax * nuissance\n")
-      qcd_outfile_perchn.write("shapes * * FAKE\n")
-      qcd_outfile_perchn.write("----------------\n")
-      qcd_outfile_perchn.write("bin binInvertDphi%d\n" % (chn))
-      qcd_outfile_perchn.write("observation %0.0f\n" % (qcd_cs))
-
-      qcd_outfile_perchn.write("bin       ")
-      for ibkg in range(3):
-         qcd_outfile_perchn.write("binInvertDphi%d "% (chn))
-      qcd_outfile_perchn.write("\n")
-
-      qcd_outfile_perchn.write("process   Sig  QCD  Contam\n")
-      qcd_outfile_perchn.write("process     0   1      2\n")
-      qcd_outfile_perchn.write("rate      0.0001")
-      if qcd_cs != 0:
-         qcd_outfile_perchn.write("  %.4f  %.4f\n" % (qcd_cs, qcd_contam_pred))
-      else:
-         qcd_outfile_perchn.write("  %.4f  %.4f\n" % (1.0, qcd_contam_pred))
-      qcd_outfile_perchn.write("---------------------------------\n")
-      
-      if qcd_contam_unc_dn_rel == 1: qcd_contam_unc_dn_rel -= 0.001
-
-      qcd_outfile_perchn.write("ivtDphiCR_chn%d  lnU - 10 -\n" % (chn))
-      qcd_outfile_perchn.write("contamUnc_chn%d  lnN - - %.4f/%.4f\n" % (chn, 1-qcd_contam_unc_dn_rel, 1+qcd_contam_unc_up_rel))
-
-      qcd_outfile_perchn.close() 
-
-      prt_qcd_syst_unc_up = math.sqrt( prt_qcd_syst_unc_up * prt_qcd_syst_unc_up + qcd_contam_unc_up_rel*qcd_contam_pred*qcd_tfactor*qcd_contam_unc_up_rel*qcd_contam_pred*qcd_tfactor)
-      prt_qcd_syst_unc_dn = math.sqrt( prt_qcd_syst_unc_dn * prt_qcd_syst_unc_dn + qcd_contam_unc_dn_rel*qcd_contam_pred*qcd_tfactor*qcd_contam_unc_dn_rel*qcd_contam_pred*qcd_tfactor)
-      if prt_qcd_syst_unc_dn > qcd_corr_rate : prt_qcd_syst_unc_dn = qcd_corr_rate
-
 #      print "chn%d  data_rate : %s +- %.4f <-->  sumPred : %.4f +- %.4f" % (chn-1, data_rate, math.sqrt(float(data_rate)), pred_tot_rate, pred_tot_stat)
 # Print out results related to event yields
       prt_pred_tot_rate = pred_tot_rate
 
-      prt_pred_tot_stat_up = math.sqrt( prt_qcd_stat_unc_up * prt_qcd_stat_unc_up + prt_lostle_stat_unc_up * prt_lostle_stat_unc_up + prt_hadtau_stat_unc_up * prt_hadtau_stat_unc_up + prt_zinv_stat_unc_up * prt_zinv_stat_unc_up + prt_ttz_stat_unc_up * prt_ttz_stat_unc_up + prt_rare_stat_unc_up * prt_rare_stat_unc_up )
-      prt_pred_tot_stat_dn = math.sqrt( prt_qcd_stat_unc_dn * prt_qcd_stat_unc_dn + prt_lostle_stat_unc_dn * prt_lostle_stat_unc_dn + prt_hadtau_stat_unc_dn * prt_hadtau_stat_unc_dn + prt_zinv_stat_unc_dn * prt_zinv_stat_unc_dn + prt_ttz_stat_unc_dn * prt_ttz_stat_unc_dn + prt_rare_stat_unc_dn * prt_rare_stat_unc_dn )
+      prt_pred_tot_stat_up = math.sqrt( prt_lostle_stat_unc_up * prt_lostle_stat_unc_up + prt_hadtau_stat_unc_up * prt_hadtau_stat_unc_up + prt_zinv_stat_unc_up * prt_zinv_stat_unc_up + prt_ttz_stat_unc_up * prt_ttz_stat_unc_up  )
+      prt_pred_tot_stat_dn = math.sqrt( prt_lostle_stat_unc_dn * prt_lostle_stat_unc_dn + prt_hadtau_stat_unc_dn * prt_hadtau_stat_unc_dn + prt_zinv_stat_unc_dn * prt_zinv_stat_unc_dn + prt_ttz_stat_unc_dn * prt_ttz_stat_unc_dn )
 
-      prt_pred_tot_syst_up = math.sqrt( prt_qcd_syst_unc_up * prt_qcd_syst_unc_up + prt_lostle_syst_unc_up * prt_lostle_syst_unc_up + prt_hadtau_syst_unc_up * prt_hadtau_syst_unc_up + prt_zinv_syst_unc_up * prt_zinv_syst_unc_up + prt_ttz_syst_unc_up * prt_ttz_syst_unc_up + prt_rare_syst_unc_up * prt_rare_syst_unc_up )
-      prt_pred_tot_syst_dn = math.sqrt( prt_qcd_syst_unc_dn * prt_qcd_syst_unc_dn + prt_lostle_syst_unc_dn * prt_lostle_syst_unc_dn + prt_hadtau_syst_unc_dn * prt_hadtau_syst_unc_dn + prt_zinv_syst_unc_dn * prt_zinv_syst_unc_dn + prt_ttz_syst_unc_dn * prt_ttz_syst_unc_dn + prt_rare_syst_unc_dn * prt_rare_syst_unc_dn )
+      prt_pred_tot_syst_up = math.sqrt( prt_lostle_syst_unc_up * prt_lostle_syst_unc_up + prt_hadtau_syst_unc_up * prt_hadtau_syst_unc_up + prt_zinv_syst_unc_up * prt_zinv_syst_unc_up + prt_ttz_syst_unc_up * prt_ttz_syst_unc_up )
+      prt_pred_tot_syst_dn = math.sqrt( prt_lostle_syst_unc_dn * prt_lostle_syst_unc_dn + prt_hadtau_syst_unc_dn * prt_hadtau_syst_unc_dn + prt_zinv_syst_unc_dn * prt_zinv_syst_unc_dn + prt_ttz_syst_unc_dn * prt_ttz_syst_unc_dn )
 
       glb_data_rate.append(float(data_rate))
       glb_lostle_rate.append(lostle_rate)
       glb_hadtau_rate.append(hadtau_rate)
       glb_zinv_rate.append(zinv_rate)
-      glb_qcd_rate.append(qcd_corr_rate)
       glb_ttz_rate.append(ttz_rate)
-      glb_rare_rate.append(rare_rate)
 
       glb_tot_rate.append(pred_tot_rate)
 
       glb_lostle_stat_up.append(prt_lostle_stat_unc_up)
       glb_hadtau_stat_up.append(prt_hadtau_stat_unc_up)
       glb_zinv_stat_up.append(prt_zinv_stat_unc_up)
-      glb_qcd_stat_up.append(prt_qcd_stat_unc_up)
       glb_ttz_stat_up.append(prt_ttz_stat_unc_up)
-      glb_rare_stat_up.append(prt_rare_stat_unc_up)
 
       glb_lostle_stat_dn.append(prt_lostle_stat_unc_dn)
       glb_hadtau_stat_dn.append(prt_hadtau_stat_unc_dn)
       glb_zinv_stat_dn.append(prt_zinv_stat_unc_dn)
-      glb_qcd_stat_dn.append(prt_qcd_stat_unc_dn)
       glb_ttz_stat_dn.append(prt_ttz_stat_unc_dn)
-      glb_rare_stat_dn.append(prt_rare_stat_unc_dn)
 
       glb_tot_stat_up.append(prt_pred_tot_stat_up)
       glb_tot_stat_dn.append(prt_pred_tot_stat_dn)
@@ -1220,23 +1026,19 @@ def prodCardPerChn(signal_key, outputdir="", lostle_file ="lostle.txt", hadtau_f
       glb_lostle_syst_up.append(prt_lostle_syst_unc_up)
       glb_hadtau_syst_up.append(prt_hadtau_syst_unc_up)
       glb_zinv_syst_up.append(prt_zinv_syst_unc_up)
-      glb_qcd_syst_up.append(prt_qcd_syst_unc_up)
       glb_ttz_syst_up.append(prt_ttz_syst_unc_up)
-      glb_rare_syst_up.append(prt_rare_syst_unc_up)
 
       glb_lostle_syst_dn.append(prt_lostle_syst_unc_dn)
       glb_hadtau_syst_dn.append(prt_hadtau_syst_unc_dn)
       glb_zinv_syst_dn.append(prt_zinv_syst_unc_dn)
-      glb_qcd_syst_dn.append(prt_qcd_syst_unc_dn)
       glb_ttz_syst_dn.append(prt_ttz_syst_unc_dn)
-      glb_rare_syst_dn.append(prt_rare_syst_unc_dn)
 
       glb_tot_syst_up.append(prt_pred_tot_syst_up)
       glb_tot_syst_dn.append(prt_pred_tot_syst_dn)
 
       print "chn%d   data_rate : %s +- %.4f   sumPred : %.4f + %.4f - %.4f (+ %.4f - %.4f)" % (chn-1, data_rate, math.sqrt(float(data_rate)), prt_pred_tot_rate, prt_pred_tot_stat_up, prt_pred_tot_stat_dn, prt_pred_tot_syst_up, prt_pred_tot_syst_dn)
 # Easy parsing format
-      prt_table_file.write("%d  %s %.4f  %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f     %.5f %.5f %.5f %.5f %.5f\n" % (chn-1, data_rate, math.sqrt(float(data_rate)), prt_pred_tot_rate, prt_pred_tot_stat_up, prt_pred_tot_stat_dn, prt_pred_tot_syst_up, prt_pred_tot_syst_dn,     lostle_rate, prt_lostle_stat_unc_up, prt_lostle_stat_unc_dn, prt_lostle_syst_unc_up, prt_lostle_syst_unc_dn,     hadtau_rate, prt_hadtau_stat_unc_up, prt_hadtau_stat_unc_dn, prt_hadtau_syst_unc_up, prt_hadtau_syst_unc_dn,     zinv_rate, prt_zinv_stat_unc_up, prt_zinv_stat_unc_dn, prt_zinv_syst_unc_up, prt_zinv_syst_unc_dn,     qcd_corr_rate, prt_qcd_stat_unc_up, prt_qcd_stat_unc_dn, prt_qcd_syst_unc_up, prt_qcd_syst_unc_dn,     ttz_rate, prt_ttz_stat_unc_up, prt_ttz_stat_unc_dn, prt_ttz_syst_unc_up, prt_ttz_syst_unc_dn,     rare_rate, prt_rare_stat_unc_up, prt_rare_stat_unc_dn, prt_rare_syst_unc_up, prt_rare_syst_unc_dn ))
+      prt_table_file.write("%d  %s %.4f  %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f    %.4f %.4f %.4f %.4f %.4f\n" % (chn-1, data_rate, math.sqrt(float(data_rate)), prt_pred_tot_rate, prt_pred_tot_stat_up, prt_pred_tot_stat_dn, prt_pred_tot_syst_up, prt_pred_tot_syst_dn,     lostle_rate, prt_lostle_stat_unc_up, prt_lostle_stat_unc_dn, prt_lostle_syst_unc_up, prt_lostle_syst_unc_dn,     hadtau_rate, prt_hadtau_stat_unc_up, prt_hadtau_stat_unc_dn, prt_hadtau_syst_unc_up, prt_hadtau_syst_unc_dn,     zinv_rate, prt_zinv_stat_unc_up, prt_zinv_stat_unc_dn, prt_zinv_syst_unc_up, prt_zinv_syst_unc_dn,     ttz_rate, prt_ttz_stat_unc_up, prt_ttz_stat_unc_dn, prt_ttz_syst_unc_up, prt_ttz_syst_unc_dn))
 #      prt_table_file.write("%d  %s %.4f  %.4f %.4f %.4f %.4f %.4f\n" % (chn-1, data_rate, math.sqrt(float(data_rate)), prt_pred_tot_rate, prt_pred_tot_stat_up, prt_pred_tot_stat_dn, prt_pred_tot_syst_up, prt_pred_tot_syst_dn))
 
    prt_table_file.close()
@@ -1296,13 +1098,11 @@ def main():
    lostle_file = open(options.lostle)
    hadtau_file = open(options.hadtau)
    zinv_file = open(options.zinv)
-   qcd_file = open(options.qcd)
    ttz_file = open(options.ttz)
-   rare_file = open(options.rare)
    data_file = open(options.data)
    signal_file = open(options.signal)
    
-   prodCardPerChn(tmp_signal_key, options.outputdir, lostle_file, hadtau_file, zinv_file, qcd_file, ttz_file, rare_file, data_file, signal_file)
+   prodCardPerChn(tmp_signal_key, options.outputdir, lostle_file, hadtau_file, zinv_file, ttz_file, data_file, signal_file)
 
 if __name__ == "__main__":
    main()
