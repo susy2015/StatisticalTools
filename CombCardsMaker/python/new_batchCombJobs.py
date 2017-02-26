@@ -6,13 +6,16 @@ import math
 import ROOT
 from optparse import OptionParser # Command line parsing
 
-import combCardPerChannel as combCard
+import new_combCardPerChannel as combCard
 
 def main():
    usage = "usage: %prog options"
    version = "%prog."
    parser = OptionParser(usage=usage,version=version)
    parser.add_option("-s", "--signal", action="store", dest="signaldir", type="string", default="", help="set signal card directory for batch processing")
+   parser.add_option("-m", "--mu", action="store", dest="ttbarW_mu", type="string", default="comb_mu.txt", help="ttbarW muon channel")
+   parser.add_option("-e", "--ele", action="store", dest="ttbarW_ele", type="string", default="comb_ele.txt", help="ttbarW electron channel")
+   parser.add_option("-c", "--comb", action="store", dest="ttbarW_comb", type="string", default="comb_comb.txt", help="ttbarW average comb channel")
    parser.add_option("-l", "--lostle", action="store", dest="lostle", type="string", default="lostle.txt", help="set lostle data card name")
    parser.add_option("-t", "--hadtau", action="store", dest="hadtau", type="string", default="hadtau.txt", help="set hadtau data card name")
    parser.add_option("-z", "--zinv", action="store", dest="zinv", type="string", default="zinv.txt", help="set zinv data card name")
@@ -22,12 +25,14 @@ def main():
    parser.add_option("-d", "--data", action="store", dest="data", type="string", default="data.txt", help="set data data card name")
    parser.add_option("-o", "--outputdir", action="store", dest="outputdir", type="string", default="", help="set combined card output directory")
    parser.add_option("-n", "--runlimit", action="store", dest="runlimit", type="string", default="yes", help="set run limit or not")
-   parser.add_option("-m", "--model", action="store", dest="model", type="string", default="T2tt", help="set SMS model type")
-   
+#   parser.add_option("-m", "--model", action="store", dest="model", type="string", default="T2tt", help="set SMS model type")
+   parser.add_option("--model", action="store", dest="model", type="string", default="T2tt", help="set SMS model type")
+
    (options, args) = parser.parse_args()
-   
-   print 'lostle :', options.lostle
-   print 'hadtau :', options.hadtau
+  
+   print 'ttbarW_comb :', options.ttbarW_comb
+   print 'ttbarW_mu :', options.ttbarW_mu
+   print 'ttbarW_ele :', options.ttbarW_ele
    print 'zinv :', options.zinv
    print 'qcd :', options.qcd
    print 'ttz :', options.ttz
@@ -42,14 +47,6 @@ def main():
       print "output directory cannot be empty!"
       return 
 
-   lostle_file = open(options.lostle)
-   hadtau_file = open(options.hadtau)
-   zinv_file = open(options.zinv)
-   qcd_file = open(options.qcd)
-   ttz_file = open(options.ttz)
-   rare_file = open(options.rare)
-   data_file = open(options.data)
-   
    tarfilename = options.outputdir + ".tgz"
 
    submitLine = """universe = vanilla
@@ -94,10 +91,8 @@ notify_user = ${LOGNAME}@FNAL.GOV
 
          print "processing the signal file : %s in output dir : %s" % (signal_name, outputdir)
 
-         signal_file = open(full_signal_name)
 # Core function to produce the cards
-         combCard.prodCardPerChn(tmp_signal_key, outputdir, lostle_file, hadtau_file, zinv_file, qcd_file, ttz_file, rare_file, data_file, signal_file)
-         signal_file.close()
+         combCard.prodCardPerChn(tmp_signal_key, outputdir, options.ttbarW_comb, options.ttbarW_mu, options.ttbarW_ele, options.zinv, options.qcd, options.ttz, options.rare, options.data, full_signal_name)
 
 # Making a combined card
          rm_comb_cards_command = "rm "
@@ -113,14 +108,6 @@ notify_user = ${LOGNAME}@FNAL.GOV
       allComb_file_dir = outputdir + "/" + "allComb_" + tmp_signal_name
       allComb_run_output_filename = "log_allComb_" + tmp_signal_name + ".lg"
       fileParts.append("Arguments = %s $ENV(CMSSW_BASE) %s\nQueue\n\n"%(allComb_file_dir, allComb_run_output_filename))
-
-   lostle_file.close()
-   hadtau_file.close()
-   zinv_file.close()
-   qcd_file.close()
-   ttz_file.close()
-   rare_file.close()
-   data_file.close()
 
 # Preparing tarred cards, executable and condor configuration files for limit jobs
    if options.runlimit == "yes":

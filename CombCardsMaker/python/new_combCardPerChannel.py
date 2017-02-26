@@ -127,6 +127,10 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
 
    doExpLimitOnly = False
 
+   lnU_rate_for_ZERO = 0.005
+   lnU_range_for_ZERO = 10.0
+   lnU_range = 10.0
+
    outbase_filename = "comb_" + signal_key
    print '\noutbase_filename : %s\n' % (outbase_filename)
 
@@ -156,7 +160,7 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
    all_output_mapper['signal'] = procfile(signal_file, adjZEROrate=True)
 # this ttbarW entry is only used for rate and limited place as the final 
 # data cards have mu and electron channel seperated.
-   all_output_mapper['ttbarW'] = procfile(comb_comb_file, procComment=True, adjZEROrate=True, adjVal=1.0)
+   all_output_mapper['ttbarW'] = procfile(comb_comb_file, procComment=True, adjZEROrate=True, adjVal=lnU_rate_for_ZERO)
 
 # special treatment for qcd to get its rate
    qcd_tfactor_cnt = 1
@@ -180,7 +184,7 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
          qcd_nonclosure_dict[qcd_nonclosure_str] = qcd_nonclosure_cnt
          qcd_nonclosure_cnt += 1 
       
-      qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else qcd_tfactor
+      qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else lnU_rate_for_ZERO*qcd_tfactor
       qcd_corr_rate = (qcd_cs-qcd_contam_pred)*qcd_tfactor if (qcd_cs-qcd_contam_pred)*qcd_tfactor >=0 else 0
       if i ==0:
          all_output_mapper['qcd']['rate'] = [qcd_rate]
@@ -210,23 +214,45 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
       pred_tot_rate = 0
       pred_tot_stat = 0
 
+      prt_stat_unc_up = {}
+      prt_stat_unc_dn = {}
+
+      prt_syst_unc_up = {}
+      prt_syst_unc_dn = {}
+
+      pred_rate = {}
+
       for key, val in proc_name.items():
          if val=='signal': continue
-         if val != 'qcd':
-            per_rate = float(all_output_mapper[val]['ori_rate'][chn-1])
-         else:
-            per_rate = float(all_output_mapper[val]['ori_rate'][chn-1])
+         per_rate = float(all_output_mapper[val]['ori_rate'][chn-1])
+         pred_rate[val] = per_rate
+         if ('ttbarW' in val) or ('comb' in val):
+            stat_unc_avg = 0.5*(float(all_output_mapper[val]['stat_unc_abs_up'][chn-1]) + float(all_output_mapper[val]['stat_unc_abs_dn'][chn-1]))
+            prt_stat_unc_up[val] = float(all_output_mapper[val]['stat_unc_abs_up'][chn-1])
+            prt_stat_unc_dn[val] = float(all_output_mapper[val]['stat_unc_abs_dn'][chn-1])
+         elif ('zinv' in val) or ('ttz' in val) or ('rare' in val):
+            cs_event = float(all_output_mapper[val]['cs_event'][chn-1]) 
+            avg_weight = float(all_output_mapper[val]['avg_weight'][chn-1])
+            stat_unc_avg = math.sqrt(cs_event) * avg_weight
+            prt_stat_unc_up[val] = math.sqrt(cs_event) * avg_weight
+            prt_stat_unc_dn[val] = math.sqrt(cs_event) * avg_weight
+            if cs_event == 0:
+               stat_unc_avg = 1.84 * avg_weight
+               prt_stat_unc_up[val] = 1.84 * avg_weight
+               prt_stat_unc_dn[val] = 0.0
+         elif 'qcd' in val:
             qcd_cs = float(all_output_mapper[val]['QCD_Data_CS'][chn-1])
             qcd_tfactor = float(all_output_mapper[val]['QCD_TFactor'][chn-1])
-            qcd_stat_unc_avg = math.sqrt(qcd_cs) * qcd_tfactor
-            prt_qcd_stat_unc_up = math.sqrt(qcd_cs) * qcd_tfactor
-            prt_qcd_stat_unc_dn = math.sqrt(qcd_cs) * qcd_tfactor
+            stat_unc_avg = math.sqrt(qcd_cs) * qcd_tfactor
+            prt_stat_unc_up[val] = math.sqrt(qcd_cs) * qcd_tfactor
+            prt_stat_unc_dn[val] = math.sqrt(qcd_cs) * qcd_tfactor
             if qcd_cs ==0 :
-               qcd_stat_unc_avg = 1.84 * qcd_tfactor
-               prt_qcd_stat_unc_up = 1.84 * qcd_tfactor
-               prt_qcd_stat_unc_dn = 0.0
+               stat_unc_avg = 1.84 * qcd_tfactor
+               prt_stat_unc_up[val] = 1.84 * qcd_tfactor
+               prt_stat_unc_dn[val] = 0.0
          pred_tot_rate += per_rate
          decl_hists[val].SetBinContent(chn, per_rate)
+         decl_hists[val].SetBinError(chn, stat_unc_avg)
          decl_hists[val+'_syst'].SetBinContent(chn, per_rate)
 
       if len(outputdir) !=0:
@@ -275,13 +301,14 @@ bin         bin{:d}\n""".format(num_proc-1, chn))
 # Down unc cannot be over 100%!
             if dn_val>=1:
                dn_val = 1.0 - 0.001
+            if up_val<=-1:
+               up_val = -1.0 + 0.001
             header_str = 'signal_'+key_key
             func_str = '  lnN  '
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
 
 # Now processing ttbarW
       pre_hyphen, aft_hyphen = getHyphenFormats(iv_proc_name, 'ttbarW', item_width)
-      lnU_range = 15
 
       ttbarW_mapper = all_output_mapper['ttbarW']
       comb_mu_mapper = all_output_mapper['comb_mu']
@@ -291,20 +318,29 @@ bin         bin{:d}\n""".format(num_proc-1, chn))
 
       header_str = 'ttbarW_CS_ch'+str(chn)
       func_str = '  lnU  '
-      outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(lnU_range, width=item_width)+'  '+aft_hyphen + '\n')
+      to_set_lnU_range_ttbarW = lnU_range
+      if float(ttbarW_mapper['ori_rate'][chn-1]) == 0: to_set_lnU_range_ttbarW = lnU_range_for_ZERO
+      outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(to_set_lnU_range_ttbarW, width=item_width)+'  '+aft_hyphen + '\n')
 
-#      for key, val in ttbarW_mapper.items():
-#         if re.match(r'^syst_.*up.*', key):
-#            dn_key = re.sub(r'up', r'dn', key)
-#            up_val = float(val[chn-1])
-#            dn_val = float(ttbarW_mapper[dn_key][chn-1])
-#            key_key = re.sub(r'_up', '', key)
-## Down unc cannot be over 100%!
-#            if dn_val>=1:
-#               dn_val = 1.0 - 0.001
-#            header_str = 'ttbarW_'+key_key
-#            func_str = '  lnN  '
-#            outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'  {:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
+      prt_syst_unc_up['ttbarW'] = 0.0
+      prt_syst_unc_dn['ttbarW'] = 0.0
+      for key, val in ttbarW_mapper.items():
+         if re.match(r'^syst_.*up.*', key):
+            dn_key = re.sub(r'up', r'dn', key)
+            up_val = float(val[chn-1])
+            dn_val = float(ttbarW_mapper[dn_key][chn-1])
+            prt_syst_unc_up['ttbarW'] += (up_val*up_val)
+            prt_syst_unc_dn['ttbarW'] += (dn_val*dn_val)
+            key_key = re.sub(r'_up', '', key)
+# Down unc cannot be over 100%!
+            if dn_val>=1:
+               dn_val = 1.0 - 0.001
+            header_str = 'ttbarW_'+key_key
+            func_str = '  lnN  '
+            outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
+      prt_syst_unc_up['ttbarW'] = math.sqrt(prt_syst_unc_up['ttbarW']) * pred_rate['ttbarW']
+      prt_syst_unc_dn['ttbarW'] = math.sqrt(prt_syst_unc_dn['ttbarW']) * pred_rate['ttbarW']
+      if prt_syst_unc_dn['ttbarW'] > pred_rate['ttbarW']: prt_syst_unc_dn['ttbarW'] = pred_rate['ttbarW']
 
 # muCS
       ttbarW_muCS_proc_name = {0:'signal', 1:'ttbarW_muCS'}
@@ -335,7 +371,7 @@ bin         bin_ttbarW_muCS_ch{:d}\n""".format(num_ttbarW_muCS_proc-1, chn))
       ttbarW_muCS_perchn.write("---------------------------------------\n")
       header_str = 'ttbarW_CS_ch'+str(chn)
       func_str = '  lnU  '
-      ttbarW_muCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_muCS+'{:<{width}.5f}'.format(lnU_range, width=item_width*2)+'  '+aft_hyphen_muCS + '\n')
+      ttbarW_muCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_muCS+'{:<{width}.5f}'.format(to_set_lnU_range_ttbarW, width=item_width*2)+'  '+aft_hyphen_muCS + '\n')
 
       for key, val in comb_mu_mapper.items():
          if re.match(r'^syst_.*up.*', key):
@@ -348,7 +384,7 @@ bin         bin_ttbarW_muCS_ch{:d}\n""".format(num_ttbarW_muCS_proc-1, chn))
                dn_val = 1.0 - 0.001
             header_str = 'ttbarW_'+key_key
             func_str = '  lnN  '
-            ttbarW_muCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_muCS+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen_muCS+'\n')
+#            ttbarW_muCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_muCS+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen_muCS+'\n')
 
 # eleCS
       ttbarW_eleCS_proc_name = {0:'signal', 1:'ttbarW_eleCS'}
@@ -379,7 +415,7 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
       ttbarW_eleCS_perchn.write("---------------------------------------\n")
       header_str = 'ttbarW_CS_ch'+str(chn)
       func_str = '  lnU  '
-      ttbarW_eleCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_eleCS+'{:<{width}.5f}'.format(lnU_range, width=item_width*2)+'  '+aft_hyphen_eleCS + '\n')
+      ttbarW_eleCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_eleCS+'{:<{width}.5f}'.format(to_set_lnU_range_ttbarW, width=item_width*2)+'  '+aft_hyphen_eleCS + '\n')
 
       for key, val in comb_ele_mapper.items():
          if re.match(r'^syst_.*up.*', key):
@@ -392,13 +428,15 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
                dn_val = 1.0 - 0.001
             header_str = 'ttbarW_'+key_key
             func_str = '  lnN  '
-            ttbarW_eleCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_eleCS+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen_eleCS+'\n')
+#            ttbarW_eleCS_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_eleCS+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen_eleCS+'\n')
 
 # Now processing zinv
       idx_zinv = iv_proc_name['zinv']
       pre_hyphen, aft_hyphen = getHyphenFormats(iv_proc_name, 'zinv', item_width)
 
       zinv_mapper = all_output_mapper['zinv']
+      prt_syst_unc_up['zinv'] = 0.0
+      prt_syst_unc_dn['zinv'] = 0.0
       for key, val in zinv_mapper.items():
          if re.match(r'^cs_event', key):
             zinv_cs_event = float(zinv_mapper['cs_event'][chn-1])
@@ -410,6 +448,8 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
             dn_key = re.sub(r'up', r'dn', key)
             up_val = float(val[chn-1])
             dn_val = float(zinv_mapper[dn_key][chn-1])
+            prt_syst_unc_up['zinv'] += (up_val*up_val)
+            prt_syst_unc_dn['zinv'] += (dn_val*dn_val)
             key_key = re.sub(r'_up', '', key)
 # Down unc cannot be over 100%!
             if dn_val>=1:
@@ -417,6 +457,9 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
             header_str = 'zinv_'+key_key
             func_str = '  lnN  '
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
+      prt_syst_unc_up['zinv'] = math.sqrt(prt_syst_unc_up['zinv']) * pred_rate['zinv']
+      prt_syst_unc_dn['zinv'] = math.sqrt(prt_syst_unc_dn['zinv']) * pred_rate['zinv']
+      if prt_syst_unc_dn['zinv'] > pred_rate['zinv']: prt_syst_unc_dn['zinv'] = pred_rate['zinv']
 
 # Now processing qcd
       idx_qcd = iv_proc_name['qcd']
@@ -427,13 +470,19 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
       pre_hyphen, aft_hyphen = getHyphenFormats(iv_proc_name, 'qcd', item_width)
       header_str = 'invertDphi_ch'+str(chn)
       func_str = '  lnU  '
-      outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(lnU_range, width=item_width)+'  '+aft_hyphen + '\n')
+      to_set_lnU_range_qcd = lnU_range
+      if float(qcd_mapper['QCD_Data_CS'][chn-1])==0: to_set_lnU_range_qcd = lnU_range_for_ZERO
+      outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(to_set_lnU_range_qcd, width=item_width)+'  '+aft_hyphen + '\n')
 
+      prt_syst_unc_up['qcd'] = 0.0
+      prt_syst_unc_dn['qcd'] = 0.0
       for key, val in qcd_mapper.items():
          if re.match(r'^QCD_TFactor_relative', key):
             qcd_tfactor = qcd_mapper['QCD_TFactor'][chn-1]
             up_val = float(val[chn-1])
             dn_val = up_val
+            prt_syst_unc_up['qcd'] += (up_val*up_val)
+            prt_syst_unc_dn['qcd'] += (dn_val*dn_val)
             if dn_val>=1:
                dn_val = 1.0 - 0.001
             header_str = 'qcd_tfactor_chn{:d}'.format(qcd_tfactor_dict[qcd_tfactor])
@@ -442,11 +491,16 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
          if re.match(r'QCD_NonClosure_relative', key):
             up_val = float(val[chn-1])
             dn_val = up_val
+            prt_syst_unc_up['qcd'] += (up_val*up_val)
+            prt_syst_unc_dn['qcd'] += (dn_val*dn_val)
             if dn_val >=1:
                dn_val = 1.0 - 0.001
             header_str = 'qcd_nonclosure_chn{:d}'.format(qcd_nonclosure_dict[val[chn-1]])
             func_str = '  lnN  '
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
+      prt_syst_unc_up['qcd'] = math.sqrt(prt_syst_unc_up['qcd']) * pred_rate['qcd']
+      prt_syst_unc_dn['qcd'] = math.sqrt(prt_syst_unc_dn['qcd']) * pred_rate['qcd']
+      if prt_syst_unc_dn['qcd'] > pred_rate['qcd']: prt_syst_unc_dn['qcd'] = pred_rate['qcd']
 
 # qcd CS
       invertDphi_proc_name = {0:'signal', 1:'qcd', 2:'contam'}
@@ -470,7 +524,7 @@ bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
 # In the main card, we have:
 # qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else qcd_tfactor 
 # this means we force qcd_cs to 1.0 when it's 0
-      qcd_pseudo_rate = qcd_cs if qcd_cs !=0 else 1
+      qcd_pseudo_rate = qcd_cs if qcd_cs !=0 else lnU_rate_for_ZERO
       qcd_contam_pred = float(all_output_mapper['qcd']['QCD_otherBG_CS'][chn-1])
 
       qcd_outfile_perchn.write("observation {:0.0f}\n".format(qcd_cs))
@@ -484,7 +538,7 @@ bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
       pre_hyphen_invertDphi, aft_hyphen_invertDphi = getHyphenFormats(ivs_invertDphi_proc_name, 'qcd', item_width*2)
       header_str = 'invertDphi_ch'+str(chn)
       func_str = '  lnU  '
-      qcd_outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_invertDphi+'{:<{width}.5f}'.format(lnU_range, width=item_width*2)+'  '+aft_hyphen_invertDphi + '\n')
+      qcd_outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_invertDphi+'{:<{width}.5f}'.format(to_set_lnU_range_qcd, width=item_width*2)+'  '+aft_hyphen_invertDphi + '\n')
 
       pre_hyphen_invertDphi, aft_hyphen_invertDphi = getHyphenFormats(ivs_invertDphi_proc_name, 'contam', item_width*2)
       up_val = float(qcd_mapper['QCD_otherBG_CS_relative_errup'][chn-1])
@@ -510,6 +564,8 @@ bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
       outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_ttz_hyphen+'{:<{width}.5f}'.format(ttz_avg_weight, width=item_width)+'  '+aft_ttz_hyphen+'\n')
 
       ttz_rate = float(ttz_mapper['ori_rate'][chn-1])
+      prt_syst_unc_up['ttz'] = 0.0
+      prt_syst_unc_dn['ttz'] = 0.0
       for key, val in ttz_mapper.items():
          if re.match('^syst_.*up.*', key):
             dn_key = re.sub(r'up', r'dn', key)
@@ -517,12 +573,17 @@ bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
             dn_val = float(ttz_mapper[dn_key][chn-1])
             up_val = 0 if ttz_rate ==0 else up_val/ttz_rate
             dn_val = 0 if ttz_rate ==0 else dn_val/ttz_rate
+            prt_syst_unc_up['ttz'] += (up_val*up_val)
+            prt_syst_unc_dn['ttz'] += (dn_val*dn_val)
             key_key = re.sub(r'_up', '', key)
             if dn_val >=1:
                dn_val = 1.0 - 0.001
             header_str = 'ttz_'+key_key
             func_str = '  lnN  '
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_ttz_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_ttz_hyphen+'\n')
+      prt_syst_unc_up['ttz'] = math.sqrt(prt_syst_unc_up['ttz']) * pred_rate['ttz']
+      prt_syst_unc_dn['ttz'] = math.sqrt(prt_syst_unc_dn['ttz']) * pred_rate['ttz']
+      if prt_syst_unc_dn['ttz'] > pred_rate['ttz']: prt_syst_unc_dn['ttz'] = pred_rate['ttz']
  
 # rare
       rare_cs_event = float(rare_mapper['cs_event'][chn-1])
@@ -533,6 +594,8 @@ bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
       outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_rare_hyphen+'{:<{width}.5f}'.format(rare_avg_weight, width=item_width)+'  '+aft_rare_hyphen+'\n')
 
       rare_rate = float(rare_mapper['ori_rate'][chn-1])
+      prt_syst_unc_up['rare'] = 0.0
+      prt_syst_unc_dn['rare'] = 0.0
       for key, val in rare_mapper.items():
          if re.match('^syst_.*up.*', key):
             dn_key = re.sub(r'up', r'dn', key)
@@ -540,13 +603,43 @@ bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
             dn_val = float(rare_mapper[dn_key][chn-1])
             up_val = 0 if rare_rate ==0 else up_val/rare_rate
             dn_val = 0 if rare_rate ==0 else dn_val/rare_rate
+            prt_syst_unc_up['rare'] += (up_val*up_val)
+            prt_syst_unc_dn['rare'] += (dn_val*dn_val)
             key_key = re.sub(r'_up', '', key)
             if dn_val >=1:
                dn_val = 1.0 - 0.001
             header_str = 'rare_'+key_key
             func_str = '  lnN  '
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_rare_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_rare_hyphen+'\n')
- 
+      prt_syst_unc_up['rare'] = math.sqrt(prt_syst_unc_up['rare']) * pred_rate['rare']
+      prt_syst_unc_dn['rare'] = math.sqrt(prt_syst_unc_dn['rare']) * pred_rate['rare']
+      if prt_syst_unc_dn['rare'] > pred_rate['rare']: prt_syst_unc_dn['rare'] = pred_rate['rare']
+
+      prt_pred_tot_rate = pred_tot_rate
+      prt_pred_tot_stat_up = 0
+      prt_pred_tot_stat_dn = 0
+      prt_pred_tot_syst_up = 0
+      prt_pred_tot_syst_dn = 0
+      for key, val in proc_name.items():
+         if val=='signal': continue
+         prt_pred_tot_stat_up += prt_stat_unc_up[val]*prt_stat_unc_up[val]         
+         prt_pred_tot_stat_dn += prt_stat_unc_dn[val]*prt_stat_unc_dn[val]         
+         prt_pred_tot_syst_up += prt_syst_unc_up[val]*prt_syst_unc_up[val]         
+         prt_pred_tot_syst_dn += prt_syst_unc_dn[val]*prt_syst_unc_dn[val]
+      prt_pred_tot_stat_up = math.sqrt(prt_pred_tot_stat_up)
+      prt_pred_tot_stat_dn = math.sqrt(prt_pred_tot_stat_dn)
+      prt_pred_tot_syst_up = math.sqrt(prt_pred_tot_syst_up)
+      prt_pred_tot_syst_dn = math.sqrt(prt_pred_tot_syst_dn)
+
+      prt_table_file.write('{:d}  {:s} {:.4f}  {:.4f} {:.4f} {:.4f} {:.4f} {:.4f}'.format(chn-1,  str(data_rate), math.sqrt(float(data_rate)),  prt_pred_tot_rate, prt_pred_tot_stat_up, prt_pred_tot_stat_dn, prt_pred_tot_syst_up, prt_pred_tot_syst_dn))
+      for key, val in proc_name.items():
+         if val == 'signal': continue
+         prt_table_file.write('  {:.4f} {:.4f} {:.4f} {:.4f} {:.4f}'.format(pred_rate[val], prt_stat_unc_up[val], prt_stat_unc_dn[val], prt_syst_unc_up[val], prt_syst_unc_dn[val]))
+      prt_table_file.write('\n')
+
+   rt_file.Write()
+   rt_file.Close()
+          
 def main():
    usage = "usage: %prog options"
    version = "%prog."

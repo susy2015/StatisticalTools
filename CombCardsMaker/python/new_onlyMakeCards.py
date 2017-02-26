@@ -11,12 +11,6 @@ def main():
    version = "%prog."
    parser = OptionParser(usage=usage,version=version)
    parser.add_option("-s", "--signal", action="store", dest="signaldir", type="string", default="", help="set signal card directory for batch processing")
-   parser.add_option("-l", "--lostle", action="store", dest="lostle", type="string", default="lostle.txt", help="set lostle data card name")
-   parser.add_option("-t", "--hadtau", action="store", dest="hadtau", type="string", default="hadtau.txt", help="set hadtau data card name")
-   parser.add_option("-z", "--zinv", action="store", dest="zinv", type="string", default="zinv.txt", help="set zinv data card name")
-   parser.add_option("-q", "--qcd", action="store", dest="qcd", type="string", default="qcd.txt", help="set qcd data card name")
-   parser.add_option("-r", "--ttz", action="store", dest="ttz", type="string", default="ttz.txt", help="set ttz data card name")
-   parser.add_option("-d", "--data", action="store", dest="data", type="string", default="data.txt", help="set data data card name")
    parser.add_option("-o", "--outputdir", action="store", dest="outputdir", type="string", default="", help="set combined card output directory")
    parser.add_option("-n", "--runlimit", action="store", dest="runlimit", type="string", default="yes", help="set run limit or not")
    parser.add_option("-m", "--model", action="store", dest="model", type="string", default="T2tt", help="set SMS model type")
@@ -24,12 +18,6 @@ def main():
    
    (options, args) = parser.parse_args()
    
-   print 'lostle :', options.lostle
-   print 'hadtau :', options.hadtau
-   print 'zinv :', options.zinv
-   print 'qcd :', options.qcd
-   print 'ttz :', options.ttz
-   print 'data :', options.data
    print 'signaldir : ', options.signaldir
    print 'runlimit : ', options.runlimit
 
