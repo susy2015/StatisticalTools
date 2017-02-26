@@ -149,7 +149,7 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
 # Note that the 'rate' numbers are adjusted specific to fit the data card formatting.
 # While possible, a 'ori_rate' is kept for the original ones (this is automatcally done in the procfile() function)
 # 'signal' : might need to be modified due to signal contamination (TODO)
-# 'ttbarW' : this is used to setup the lep CS, in order to tell the combine tool the TF, the rate cannot be 0 (force to 1.0)
+# 'ttbarW' : this is used to setup the lep CS, in order to tell the combine tool the TF, the rate cannot be 0 (force to lnU_rate_for_ZERO)
 # all others : a very small number (0.00001) is used to replace 0.0 since otherwise the combine tool will complain
    all_output_mapper['comb_mu'] = procfile(comb_mu_file, procComment=True, adjZEROrate=True)
    all_output_mapper['comb_ele'] = procfile(comb_ele_file, procComment=True, adjZEROrate=True)
@@ -523,7 +523,7 @@ bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
       qcd_signal_rate = 0.0001
 # In the main card, we have:
 # qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else qcd_tfactor 
-# this means we force qcd_cs to 1.0 when it's 0
+# this means we force qcd_cs to lnU_rate_for_ZERO when it's 0
       qcd_pseudo_rate = qcd_cs if qcd_cs !=0 else lnU_rate_for_ZERO
       qcd_contam_pred = float(all_output_mapper['qcd']['QCD_otherBG_CS'][chn-1])
 
