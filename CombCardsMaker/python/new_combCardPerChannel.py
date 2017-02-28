@@ -294,6 +294,8 @@ bin         bin{:d}\n""".format(num_proc-1, chn))
             func_str = 'gmN  {:0.0f}  '.format(signal_cs_event-signal_contam)
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(signal_avg_weight, width=item_width)+'  '+aft_hyphen+'\n')
          if re.match(r'^syst_.*up.*', key):
+            if 'pdfUnc' in key:
+               continue
             dn_key = re.sub(r'up', r'dn', key)
             up_val = float(val[chn-1])
             dn_val = float(signal_mapper[dn_key][chn-1])
