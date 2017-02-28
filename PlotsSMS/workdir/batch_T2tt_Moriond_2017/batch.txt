@@ -1,0 +1,6 @@
+./plot_SMS T2tt 1.00 adjT2tt
+python python/makeSMSplots.py T2tt_SUS_combined.cfg BR_1.00_Stop_Only
+python python/makeSMSplots.py T2tt_SUS_combined_Covered.cfg BR_1.00_Stop_Only
+python python/makeBinaryplots.py T2tt_SUS_combined_Binary_EXP.cfg BR_1.00_Stop_Only
+python python/makeBinaryplots.py T2tt_SUS_combined_Binary_OBS.cfg BR_1.00_Stop_Only
+cp ori_combined_plots_T2tt/signal_strength.root results_T2tt/
