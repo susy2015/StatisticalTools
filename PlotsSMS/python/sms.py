@@ -232,10 +232,10 @@ class sms():
 #        self.Ymin = 12.5
 #        self.Ymax = 537.5
         self.Xmin = 100.0
-        self.Xmax = 900.0
+        self.Xmax = 1200.0
         self.Ymin = 0.00
-        self.Ymax = 500.0
-        self.Zmin = 0.02
+        self.Ymax = 650.0
+        self.Zmin = 0.0005
         self.Zmax = 100
         # produce sparticle
         self.sParticle = "m#kern[0.1]{_{#lower[-0.12]{#tilde{t}}}} [GeV]"
