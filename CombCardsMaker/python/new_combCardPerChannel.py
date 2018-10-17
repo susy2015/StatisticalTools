@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #from os import listdir
 #from os import sys
@@ -121,7 +121,7 @@ def getHyphenFormats(iv_proc_name, proc='signal', item_width=14, offset=0):
 
 proc_name = {0:'signal', 1:'ttbarW', 2:'zinv', 3:'qcd', 4:'ttz', 5:'rare'}
 num_proc = len(proc_name)
-iv_proc_name = {val:key for key, val in proc_name.items()}
+iv_proc_name = dict( (val, key) for key, val in proc_name.items())
 
 def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', comb_mu_file ='comb_mu.txt', comb_ele_file ='comb_ele.txt', zinv_file='zinv.txt', qcd_file='qcd.txt', ttz_file='ttz.txt', rare_file='rare.txt', data_file='data.txt', signal_file ='signal.txt'):
 
@@ -162,38 +162,38 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
 # data cards have mu and electron channel seperated.
    all_output_mapper['ttbarW'] = procfile(comb_comb_file, procComment=True, adjZEROrate=True, adjVal=lnU_rate_for_ZERO)
 
-# special treatment for qcd to get its rate
-   qcd_tfactor_cnt = 1
-   qcd_tfactor_dict = {}
-
-   qcd_nonclosure_cnt = 1
-   qcd_nonclosure_dict = {}
-
-   for i in range(val_channels):
-      qcd_cs = float(all_output_mapper['qcd']['QCD_Data_CS'][i])
-      qcd_contam_pred = float(all_output_mapper['qcd']['QCD_otherBG_CS'][i])
-
-      qcd_tfactor = float(all_output_mapper['qcd']['QCD_TFactor'][i])
-      qcd_tfactor_str = str(qcd_tfactor)
-      if not (qcd_tfactor_str in qcd_tfactor_dict.keys()):
-         qcd_tfactor_dict[qcd_tfactor_str] = qcd_tfactor_cnt
-         qcd_tfactor_cnt += 1 
-      
-      qcd_nonclosure_str = all_output_mapper['qcd']['QCD_NonClosure_relative_err'][i]
-      if not (qcd_nonclosure_str in qcd_nonclosure_dict.keys()):
-         qcd_nonclosure_dict[qcd_nonclosure_str] = qcd_nonclosure_cnt
-         qcd_nonclosure_cnt += 1 
-      
-      qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else lnU_rate_for_ZERO*qcd_tfactor
-      qcd_corr_rate = (qcd_cs-qcd_contam_pred)*qcd_tfactor if (qcd_cs-qcd_contam_pred)*qcd_tfactor >=0 else 0
-      if i ==0:
-         all_output_mapper['qcd']['rate'] = [qcd_rate]
-#         all_output_mapper['qcd']['corr_rate'] = [qcd_corr_rate]
-         all_output_mapper['qcd']['ori_rate'] = [qcd_corr_rate]
-      else:
-         all_output_mapper['qcd']['rate'].append(qcd_rate)
-#         all_output_mapper['qcd']['corr_rate'].append(qcd_corr_rate)
-         all_output_mapper['qcd']['ori_rate'].append(qcd_corr_rate)
+## special treatment for qcd to get its rate
+#   qcd_tfactor_cnt = 1
+#   qcd_tfactor_dict = {}
+#
+#   qcd_nonclosure_cnt = 1
+#   qcd_nonclosure_dict = {}
+#
+#   for i in range(val_channels):
+#      qcd_cs = float(all_output_mapper['qcd']['QCD_Data_CS'][i])
+#      qcd_contam_pred = float(all_output_mapper['qcd']['QCD_otherBG_CS'][i])
+#
+#      qcd_tfactor = float(all_output_mapper['qcd']['QCD_TFactor'][i])
+#      qcd_tfactor_str = str(qcd_tfactor)
+#      if not (qcd_tfactor_str in qcd_tfactor_dict.keys()):
+#         qcd_tfactor_dict[qcd_tfactor_str] = qcd_tfactor_cnt
+#         qcd_tfactor_cnt += 1 
+#      
+#      qcd_nonclosure_str = all_output_mapper['qcd']['QCD_NonClosure_relative_err'][i]
+#      if not (qcd_nonclosure_str in qcd_nonclosure_dict.keys()):
+#         qcd_nonclosure_dict[qcd_nonclosure_str] = qcd_nonclosure_cnt
+#         qcd_nonclosure_cnt += 1 
+#      
+#      qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else lnU_rate_for_ZERO*qcd_tfactor
+#      qcd_corr_rate = (qcd_cs-qcd_contam_pred)*qcd_tfactor if (qcd_cs-qcd_contam_pred)*qcd_tfactor >=0 else 0
+#      if i ==0:
+#         all_output_mapper['qcd']['rate'] = [qcd_rate]
+##         all_output_mapper['qcd']['corr_rate'] = [qcd_corr_rate]
+#         all_output_mapper['qcd']['ori_rate'] = [qcd_corr_rate]
+#      else:
+#         all_output_mapper['qcd']['rate'].append(qcd_rate)
+##         all_output_mapper['qcd']['corr_rate'].append(qcd_corr_rate)
+#         all_output_mapper['qcd']['ori_rate'].append(qcd_corr_rate)
 
 # special treatment for signal
 #   for i in range(val_channels):
@@ -230,7 +230,8 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
             stat_unc_avg = 0.5*(float(all_output_mapper[val]['stat_unc_abs_up'][chn-1]) + float(all_output_mapper[val]['stat_unc_abs_dn'][chn-1]))
             prt_stat_unc_up[val] = float(all_output_mapper[val]['stat_unc_abs_up'][chn-1])
             prt_stat_unc_dn[val] = float(all_output_mapper[val]['stat_unc_abs_dn'][chn-1])
-         elif ('zinv' in val) or ('ttz' in val) or ('rare' in val):
+         #elif ('zinv' in val) or ('ttz' in val) or ('rare' in val):
+         elif ('zinv' in val) or ('ttz' in val) or ('rare' in val) or ('qcd' in val):
             cs_event = float(all_output_mapper[val]['cs_event'][chn-1]) 
             avg_weight = float(all_output_mapper[val]['avg_weight'][chn-1])
             stat_unc_avg = math.sqrt(cs_event) * avg_weight
@@ -240,16 +241,16 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
                stat_unc_avg = 1.84 * avg_weight
                prt_stat_unc_up[val] = 1.84 * avg_weight
                prt_stat_unc_dn[val] = 0.0
-         elif 'qcd' in val:
-            qcd_cs = float(all_output_mapper[val]['QCD_Data_CS'][chn-1])
-            qcd_tfactor = float(all_output_mapper[val]['QCD_TFactor'][chn-1])
-            stat_unc_avg = math.sqrt(qcd_cs) * qcd_tfactor
-            prt_stat_unc_up[val] = math.sqrt(qcd_cs) * qcd_tfactor
-            prt_stat_unc_dn[val] = math.sqrt(qcd_cs) * qcd_tfactor
-            if qcd_cs ==0 :
-               stat_unc_avg = 1.84 * qcd_tfactor
-               prt_stat_unc_up[val] = 1.84 * qcd_tfactor
-               prt_stat_unc_dn[val] = 0.0
+#         elif 'qcd' in val:
+#            qcd_cs = float(all_output_mapper[val]['QCD_Data_CS'][chn-1])
+#            qcd_tfactor = float(all_output_mapper[val]['QCD_TFactor'][chn-1])
+#            stat_unc_avg = math.sqrt(qcd_cs) * qcd_tfactor
+#            prt_stat_unc_up[val] = math.sqrt(qcd_cs) * qcd_tfactor
+#            prt_stat_unc_dn[val] = math.sqrt(qcd_cs) * qcd_tfactor
+#            if qcd_cs ==0 :
+#               stat_unc_avg = 1.84 * qcd_tfactor
+#               prt_stat_unc_up[val] = 1.84 * qcd_tfactor
+#               prt_stat_unc_dn[val] = 0.0
          pred_tot_rate += per_rate
          decl_hists[val].SetBinContent(chn, per_rate)
          decl_hists[val].SetBinError(chn, stat_unc_avg)
@@ -463,94 +464,126 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
       prt_syst_unc_dn['zinv'] = math.sqrt(prt_syst_unc_dn['zinv']) * pred_rate['zinv']
       if prt_syst_unc_dn['zinv'] > pred_rate['zinv']: prt_syst_unc_dn['zinv'] = pred_rate['zinv']
 
-# Now processing qcd
+# Now processing QCD like zinv
       idx_qcd = iv_proc_name['qcd']
       pre_hyphen, aft_hyphen = getHyphenFormats(iv_proc_name, 'qcd', item_width)
 
       qcd_mapper = all_output_mapper['qcd']
-
-      pre_hyphen, aft_hyphen = getHyphenFormats(iv_proc_name, 'qcd', item_width)
-      header_str = 'invertDphi_ch'+str(chn)
-      func_str = '  lnU  '
-      to_set_lnU_range_qcd = lnU_range
-      if float(qcd_mapper['QCD_Data_CS'][chn-1])==0: to_set_lnU_range_qcd = lnU_range_for_ZERO
-      outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(to_set_lnU_range_qcd, width=item_width)+'  '+aft_hyphen + '\n')
-
       prt_syst_unc_up['qcd'] = 0.0
       prt_syst_unc_dn['qcd'] = 0.0
       for key, val in qcd_mapper.items():
-         if re.match(r'^QCD_TFactor_relative', key):
-            qcd_tfactor = qcd_mapper['QCD_TFactor'][chn-1]
+         if re.match(r'^cs_event', key):
+            qcd_cs_event = float(qcd_mapper['cs_event'][chn-1])
+            qcd_avg_weight = float(qcd_mapper['avg_weight'][chn-1])
+            header_str = 'qcd_stat_unc_chn'+str(chn)
+            func_str = 'gmN  {:0.0f}  '.format(qcd_cs_event)
+            outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(qcd_avg_weight, width=item_width)+'  '+aft_hyphen+'\n')
+         if re.match(r'^syst_.*up.*', key):
+            dn_key = re.sub(r'up', r'dn', key)
             up_val = float(val[chn-1])
-            dn_val = up_val
+            dn_val = float(qcd_mapper[dn_key][chn-1])
             prt_syst_unc_up['qcd'] += (up_val*up_val)
             prt_syst_unc_dn['qcd'] += (dn_val*dn_val)
+            key_key = re.sub(r'_up', '', key)
+# Down unc cannot be over 100%!
             if dn_val>=1:
                dn_val = 1.0 - 0.001
-            header_str = 'qcd_tfactor_chn{:d}'.format(qcd_tfactor_dict[qcd_tfactor])
-            func_str = '  lnN  '
-            outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
-         if re.match(r'QCD_NonClosure_relative', key):
-            up_val = float(val[chn-1])
-            dn_val = up_val
-            prt_syst_unc_up['qcd'] += (up_val*up_val)
-            prt_syst_unc_dn['qcd'] += (dn_val*dn_val)
-            if dn_val >=1:
-               dn_val = 1.0 - 0.001
-            header_str = 'qcd_nonclosure_chn{:d}'.format(qcd_nonclosure_dict[val[chn-1]])
+            header_str = 'qcd_'+key_key
             func_str = '  lnN  '
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
       prt_syst_unc_up['qcd'] = math.sqrt(prt_syst_unc_up['qcd']) * pred_rate['qcd']
       prt_syst_unc_dn['qcd'] = math.sqrt(prt_syst_unc_dn['qcd']) * pred_rate['qcd']
       if prt_syst_unc_dn['qcd'] > pred_rate['qcd']: prt_syst_unc_dn['qcd'] = pred_rate['qcd']
 
-# qcd CS
-      invertDphi_proc_name = {0:'signal', 1:'qcd', 2:'contam'}
-      num_invertDphi_proc = len(invertDphi_proc_name)
-      ivs_invertDphi_proc_name = {val:key for key, val in invertDphi_proc_name.items()}
 
-      if len(outputdir) !=0:
-         qcd_outfile_perchn = open(outputdir + "/comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
-      else:
-         qcd_outfile_perchn = open("comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
-      
-      qcd_outfile_perchn.write("""imax 1 # number of channels\n
-jmax {} # number of backgrounds\n
-kmax * nuissance\n"
-shapes * * FAKE\n
-----------------\n
-bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
-
-      qcd_cs = float(qcd_mapper['QCD_Data_CS'][chn-1])
-      qcd_signal_rate = 0.0001
-# In the main card, we have:
-# qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else qcd_tfactor 
-# this means we force qcd_cs to lnU_rate_for_ZERO when it's 0
-      qcd_pseudo_rate = qcd_cs if qcd_cs !=0 else lnU_rate_for_ZERO
-      qcd_contam_pred = float(all_output_mapper['qcd']['QCD_otherBG_CS'][chn-1])
-
-      qcd_outfile_perchn.write("observation {:0.0f}\n".format(qcd_cs))
-      qcd_outfile_perchn.write('{:<{width}s}'.format('bin', width=total_label_width)+'{:<{width}s}'.format('bin_invertDphi_ch'+str(chn), width = item_width*2+2)*num_invertDphi_proc+'\n')
-      qcd_outfile_perchn.write('{:<{width}s}'.format('process', width=total_label_width)+'  '.join('{:<{width}s}'.format(val, width=item_width*2) for key, val in invertDphi_proc_name.items()) + '\n')
-      qcd_outfile_perchn.write('{:<{width}s}'.format('process', width=total_label_width)+'  '.join('{:<{width}s}'.format(str(key), width=item_width*2) for key, val in invertDphi_proc_name.items()) + '\n')
-      qcd_outfile_perchn.write('{:<{width}s}'.format('rate', width=total_label_width)+'{:<{width}.5f}'.format(qcd_signal_rate, width=item_width*2)+'  {:<{width}.5f}'.format(qcd_pseudo_rate, width=item_width*2)
-                        +'  {:<{width}.5f}'.format(qcd_contam_pred, width=item_width*2) + '\n')
-      qcd_outfile_perchn.write("---------------------------------------\n")
-
-      pre_hyphen_invertDphi, aft_hyphen_invertDphi = getHyphenFormats(ivs_invertDphi_proc_name, 'qcd', item_width*2)
-      header_str = 'invertDphi_ch'+str(chn)
-      func_str = '  lnU  '
-      qcd_outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_invertDphi+'{:<{width}.5f}'.format(to_set_lnU_range_qcd, width=item_width*2)+'  '+aft_hyphen_invertDphi + '\n')
-
-      pre_hyphen_invertDphi, aft_hyphen_invertDphi = getHyphenFormats(ivs_invertDphi_proc_name, 'contam', item_width*2)
-      up_val = float(qcd_mapper['QCD_otherBG_CS_relative_errup'][chn-1])
-      dn_val = float(qcd_mapper['QCD_otherBG_CS_relative_errdn'][chn-1])
-      if dn_val>=1:
-         dn_val = 1.0 - 0.001
-      header_str = 'qcd_contamUnc_chn{:d}'.format(chn)
-      func_str = '  lnN  '
-      qcd_outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_invertDphi + '{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen_invertDphi +'\n')
-
+## Now processing qcd
+#      idx_qcd = iv_proc_name['qcd']
+#      pre_hyphen, aft_hyphen = getHyphenFormats(iv_proc_name, 'qcd', item_width)
+#
+#      qcd_mapper = all_output_mapper['qcd']
+#
+#      pre_hyphen, aft_hyphen = getHyphenFormats(iv_proc_name, 'qcd', item_width)
+#      header_str = 'invertDphi_ch'+str(chn)
+#      func_str = '  lnU  '
+#      to_set_lnU_range_qcd = lnU_range
+#      if float(qcd_mapper['QCD_Data_CS'][chn-1])==0: to_set_lnU_range_qcd = lnU_range_for_ZERO
+#      outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(to_set_lnU_range_qcd, width=item_width)+'  '+aft_hyphen + '\n')
+#
+#      prt_syst_unc_up['qcd'] = 0.0
+#      prt_syst_unc_dn['qcd'] = 0.0
+#      for key, val in qcd_mapper.items():
+#         if re.match(r'^QCD_TFactor_relative', key):
+#            qcd_tfactor = qcd_mapper['QCD_TFactor'][chn-1]
+#            up_val = float(val[chn-1])
+#            dn_val = up_val
+#            prt_syst_unc_up['qcd'] += (up_val*up_val)
+#            prt_syst_unc_dn['qcd'] += (dn_val*dn_val)
+#            if dn_val>=1:
+#               dn_val = 1.0 - 0.001
+#            header_str = 'qcd_tfactor_chn{:d}'.format(qcd_tfactor_dict[qcd_tfactor])
+#            func_str = '  lnN  '
+#            outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
+#         if re.match(r'QCD_NonClosure_relative', key):
+#            up_val = float(val[chn-1])
+#            dn_val = up_val
+#            prt_syst_unc_up['qcd'] += (up_val*up_val)
+#            prt_syst_unc_dn['qcd'] += (dn_val*dn_val)
+#            if dn_val >=1:
+#               dn_val = 1.0 - 0.001
+#            header_str = 'qcd_nonclosure_chn{:d}'.format(qcd_nonclosure_dict[val[chn-1]])
+#            func_str = '  lnN  '
+#            outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen+'\n')
+#      prt_syst_unc_up['qcd'] = math.sqrt(prt_syst_unc_up['qcd']) * pred_rate['qcd']
+#      prt_syst_unc_dn['qcd'] = math.sqrt(prt_syst_unc_dn['qcd']) * pred_rate['qcd']
+#      if prt_syst_unc_dn['qcd'] > pred_rate['qcd']: prt_syst_unc_dn['qcd'] = pred_rate['qcd']
+#
+## qcd CS
+#      invertDphi_proc_name = {0:'signal', 1:'qcd', 2:'contam'}
+#      num_invertDphi_proc = len(invertDphi_proc_name)
+#      ivs_invertDphi_proc_name = {val:key for key, val in invertDphi_proc_name.items()}
+#
+#      if len(outputdir) !=0:
+#         qcd_outfile_perchn = open(outputdir + "/comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
+#      else:
+#         qcd_outfile_perchn = open("comb_invertDphi_"+ signal_key + "_ch" + str(chn) + ".txt", "w")
+#      
+#      qcd_outfile_perchn.write("""imax 1 # number of channels\n
+#jmax {} # number of backgrounds\n
+#kmax * nuissance\n"
+#shapes * * FAKE\n
+#----------------\n
+#bin         bin_invertDphi_ch{:d}\n""".format(num_invertDphi_proc-1, chn))
+#
+#      qcd_cs = float(qcd_mapper['QCD_Data_CS'][chn-1])
+#      qcd_signal_rate = 0.0001
+## In the main card, we have:
+## qcd_rate = qcd_cs*qcd_tfactor if qcd_cs !=0 else qcd_tfactor 
+## this means we force qcd_cs to lnU_rate_for_ZERO when it's 0
+#      qcd_pseudo_rate = qcd_cs if qcd_cs !=0 else lnU_rate_for_ZERO
+#      qcd_contam_pred = float(all_output_mapper['qcd']['QCD_otherBG_CS'][chn-1])
+#
+#      qcd_outfile_perchn.write("observation {:0.0f}\n".format(qcd_cs))
+#      qcd_outfile_perchn.write('{:<{width}s}'.format('bin', width=total_label_width)+'{:<{width}s}'.format('bin_invertDphi_ch'+str(chn), width = item_width*2+2)*num_invertDphi_proc+'\n')
+#      qcd_outfile_perchn.write('{:<{width}s}'.format('process', width=total_label_width)+'  '.join('{:<{width}s}'.format(val, width=item_width*2) for key, val in invertDphi_proc_name.items()) + '\n')
+#      qcd_outfile_perchn.write('{:<{width}s}'.format('process', width=total_label_width)+'  '.join('{:<{width}s}'.format(str(key), width=item_width*2) for key, val in invertDphi_proc_name.items()) + '\n')
+#      qcd_outfile_perchn.write('{:<{width}s}'.format('rate', width=total_label_width)+'{:<{width}.5f}'.format(qcd_signal_rate, width=item_width*2)+'  {:<{width}.5f}'.format(qcd_pseudo_rate, width=item_width*2)
+#                        +'  {:<{width}.5f}'.format(qcd_contam_pred, width=item_width*2) + '\n')
+#      qcd_outfile_perchn.write("---------------------------------------\n")
+#
+#      pre_hyphen_invertDphi, aft_hyphen_invertDphi = getHyphenFormats(ivs_invertDphi_proc_name, 'qcd', item_width*2)
+#      header_str = 'invertDphi_ch'+str(chn)
+#      func_str = '  lnU  '
+#      qcd_outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_invertDphi+'{:<{width}.5f}'.format(to_set_lnU_range_qcd, width=item_width*2)+'  '+aft_hyphen_invertDphi + '\n')
+#
+#      pre_hyphen_invertDphi, aft_hyphen_invertDphi = getHyphenFormats(ivs_invertDphi_proc_name, 'contam', item_width*2)
+#      up_val = float(qcd_mapper['QCD_otherBG_CS_relative_errup'][chn-1])
+#      dn_val = float(qcd_mapper['QCD_otherBG_CS_relative_errdn'][chn-1])
+#      if dn_val>=1:
+#         dn_val = 1.0 - 0.001
+#      header_str = 'qcd_contamUnc_chn{:d}'.format(chn)
+#      func_str = '  lnN  '
+#      qcd_outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen_invertDphi + '{:>{width1}.4f}/{:<{width2}.4f}'.format(1-dn_val, 1+up_val, width1=int((item_width-2)/2), width2=int((item_width-2)/2) )+'   '+aft_hyphen_invertDphi +'\n')
+#
 # Now processing ttz + rare
       ttz_mapper = all_output_mapper['ttz']
       rare_mapper = all_output_mapper['rare']

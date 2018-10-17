@@ -1,6 +1,0 @@
-# https://twiki.cern.ch/twiki/bin/view/CMS/HiggsWG/HiggsPAGPreapprovalChecks
-tar zxvf cards_1050_1.tgz
-combineCards.py output/comb_*.txt > allComb_1050_1.txt
-combine -M MaxLikelihoodFit allComb_1050_1.txt --saveShapes --saveWithUncertainties -v 3 >& log_combine_1050_1.lg
-mv mlfit.root mlfit_1050_1.root
-python diffNuisances.py mlfit_1050_1.root -g outputfile_1050_1.root -a > output_1050_1.txt

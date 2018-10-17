@@ -29,7 +29,7 @@ def main():
    parser.add_option("--model", action="store", dest="model", type="string", default="T2tt", help="set SMS model type")
 
    (options, args) = parser.parse_args()
-  
+
    print 'ttbarW_comb :', options.ttbarW_comb
    print 'ttbarW_mu :', options.ttbarW_mu
    print 'ttbarW_ele :', options.ttbarW_ele
@@ -45,7 +45,7 @@ def main():
       if not os.path.exists(options.outputdir): os.mkdir(options.outputdir)
    else:
       print "output directory cannot be empty!"
-      return 
+      return
 
    tarfilename = options.outputdir + ".tgz"
 
@@ -59,13 +59,14 @@ Output = logs/basicCheck_$(Process).stdout
 Error = logs/basicCheck_$(Process).stderr
 Log = logs/basicCheck_$(Process).log
 notify_user = ${LOGNAME}@FNAL.GOV
+request_memory = 4000
 
 """
    fileParts = [submitLine]
 
    signal_key_list = []
 
-# Batch making the cards for individual channels and a combined one for the combination tool   
+# Batch making the cards for individual channels and a combined one for the combination tool
    for signal_name in os.listdir(options.signaldir):
       if not ("signal" in signal_name): continue
       if not (".txt" in signal_name): continue
@@ -84,7 +85,7 @@ notify_user = ${LOGNAME}@FNAL.GOV
       full_signal_name = os.path.join(options.signaldir, signal_name)
 
       outputdir = options.outputdir + "/" + tmp_signal_name.replace(".txt", "")
-   
+
       if options.runlimit == "yes":
          if len(outputdir) !=0:
             if not os.path.exists(outputdir): os.mkdir(outputdir)
@@ -119,8 +120,21 @@ notify_user = ${LOGNAME}@FNAL.GOV
 export PATH=${PATH}:/cvmfs/cms.cern.ch/common
 export CMS_PATH=/cvmfs/cms.cern.ch
 
-cd $2/src
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+export SCRAM_ARCH=slc6_amd64_gcc530
+export CMSSW_Version=`echo $2 | awk -F / '{for (i=1;i<=NF;i++) if ($i ~ /^CMSSW_.*$/) print $i}'`
+#cmsrel $CMSSW_Version
+scramv1 project CMSSW $CMSSW_Version
+cd ${CMSSW_Version}/src
 eval `scramv1 runtime -sh`
+git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+cd HiggsAnalysis/CombinedLimit
+git fetch origin
+git checkout v7.0.10
+scramv1 b clean
+scramv1 b
+eval `scramv1 runtime -sh`
+
 
 cd ${_CONDOR_SCRATCH_DIR}
 
@@ -145,7 +159,7 @@ combine -M Asymptotic $1 > $3
 
 # Checking if the jobs are done
    while True:
-      condor_check_command = "condor_q -submitter " + os.environ["USER"] + " -wide > tmp_condor_check_output.txt" 
+      condor_check_command = "condor_q -submitter " + os.environ["USER"] + " -wide > tmp_condor_check_output.txt"
       os.system(condor_check_command)
       tmp_condor_file = open("tmp_condor_check_output.txt")
       cnt_runjobs =0
@@ -190,7 +204,7 @@ combine -M Asymptotic $1 > $3
 
       binIdx = h1_xSec.FindBin(float(momMass))
       xSec = h1_xSec.GetBinContent(binIdx)
-     
+
       log_file = open(log_file_name)
       for log_line in log_file:
          log_line_split = log_line.split()
@@ -224,7 +238,7 @@ limit.cls.expected.p2sigma = -1
 
       filelist_for_plotting.write(format_file_name + "\n")
 
-   filelist_for_plotting.close()      
+   filelist_for_plotting.close()
 
 if __name__ == "__main__":
    main()

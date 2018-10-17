@@ -1,1 +1,0 @@
-../batch_T1tttt_2016_ICHEP/for_2016_ICHEP_batchCombJobs.py

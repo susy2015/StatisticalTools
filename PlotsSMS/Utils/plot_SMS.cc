@@ -444,8 +444,26 @@ int plot(int argc, char** argv)
             hexplimit = rebin(hexplimit);
          }
 
+	 hexplimit->SetTitle("");
          hexplimit->SetMinimum(0.001);
          hexplimit->SetMaximum(20);
+	 hexplimit->GetXaxis()->SetRangeUser(0,1200);
+	 hexplimit->GetYaxis()->SetRangeUser(20,800);
+	 hexplimit->GetXaxis()->SetTitle("mStop [GeV]");
+	 hexplimit->GetXaxis()->SetTitleSize(0.045);;
+	 hexplimit->GetYaxis()->SetTitle("mLSP [GeV]");
+	 hexplimit->GetYaxis()->SetTitleSize(0.045);;
+	 hexplimit->GetXaxis()->SetNdivisions(510);
+	 if( topoStr == "T1tttt" )
+         {
+		hexplimit->SetMinimum(0.0001);
+         	hexplimit->SetMaximum(2);
+		hexplimit->GetXaxis()->SetRangeUser(600,2200);
+		hexplimit->GetYaxis()->SetRangeUser(20,1800);
+		hexplimit->GetXaxis()->SetTitle("mGluino [GeV]");
+		hexplimit->GetXaxis()->SetLabelSize(0.04);
+	 }
+
          hexplimit->Draw("colz");
          TString expHistName = region[i]+"expLimit";
          explimitVec[i] = (TH2F*) hexplimit->Clone(expHistName.Data());
@@ -458,18 +476,25 @@ int plot(int argc, char** argv)
          if( topoStr != "TGQ" ){
             expExclOneTimesxSecProspino->SetLineWidth(2); expExclOneTimesxSecProspino->Draw("same");
          }
-         cmsPreTex.DrawLatex(0.20, 0.85, "CMS Preliminary");
-         cmsLumiTex.DrawLatex(0.20, 0.79, "L_{int} = 19.47 fb^{-1}, #sqrt{s} = 8 TeV");
+
+	 TLatex latex;
+	 latex.SetTextSize(0.04);
+	 latex.SetNDC();
+         latex.DrawLatex(0.20, 0.85, "CMS Preliminary");
+         latex.DrawLatex(0.20, 0.79, "L_{int} = 36 fb^{-1}, #sqrt{s} = 13 TeV");
+
+         //cmsPreTex.DrawLatex(0.20, 0.85, "CMS Preliminary");
+         //cmsLumiTex.DrawLatex(0.20, 0.79, "L_{int} = 19.47 fb^{-1}, #sqrt{s} = 8 TeV");
 //         disptTex.DrawLatex(0.17, 0.74, dispt[i]);
 /*
          cmsPreTex.DrawLatex(350, 1100, "CMS Preliminary");
          cmsLumiTex.DrawLatex(350, 1030, "L_{int} = 4.98 fb^{-1}, #sqrt{s} = 7 TeV");
          disptTex.DrawLatex(350, 960, dispt[i]);
 */
-         legexp->Clear();
-         legexp->AddEntry(expExclOneTimesxSecProspino, "#sigma^{prod}=#sigma^{NLO-QCD}", "l");
+         //legexp->Clear();
+         //legexp->AddEntry(expExclOneTimesxSecProspino, "#sigma^{prod}=#sigma^{NLO-QCD}", "l");
 //         legexp->AddEntry(expExclThreeTimesxSecProspino, "#sigma^{prod}=3#times#sigma^{NLO-QCD}", "l");
-         if( topoStr != "TGQ" ) legexp->Draw();
+         //if( topoStr != "TGQ" ) legexp->Draw();
          c1->SaveAs(outDir + "/" +topoStr +"_" + region[i]+"ExpLimit_mMother_mLSP.pdf");
          c1->SaveAs(outDir + "/" +topoStr +"_" + region[i]+"ExpLimit_mMother_mLSP.png");
          c1->SaveAs(outDir + "/" +topoStr +"_" + region[i]+"ExpLimit_mMother_mLSP.C");
@@ -1282,6 +1307,12 @@ int plot(int argc, char** argv)
 
          minExpExclNLOcloned->SetMinimum(0.001);
          minExpExclNLOcloned->SetMaximum(20);
+	 if( topoStr == "T1tttt" )
+         {
+         minExpExclNLOcloned->SetMinimum(0.0001);
+         minExpExclNLOcloned->SetMaximum(2);
+	 }
+
          minExpExclNLOcloned->Draw("colz");
          diagonalGraph->Draw("l");
 

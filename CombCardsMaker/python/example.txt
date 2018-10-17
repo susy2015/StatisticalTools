@@ -1,0 +1,16 @@
+cp -r /uscms_data/d3/huiwang/CMSSW_9_4_4/src/SusyAnaTools/Tools/datacards/signal_T1tttt_highdm signalCards
+
+cp /uscms_data/d3/huiwang/CMSSW_9_4_4/src/SusyAnaTools/Tools/datacards/T1tttt_mGluino2000_mLSP100_highdm/*.txt .
+
+ln -s ../new_onlyMakeCards.py .
+
+ln -s ../new_batchCombJobs.py .
+
+ln -s ../new_combCardPerChannel.py .
+
+ln -s ../xSec.root .
+
+python new_batchCombJobs.py -s signalCards -o prod >& log_prod.lg&
+
+python new_onlyMakeCards.py -s signalCards -m T2tt
+

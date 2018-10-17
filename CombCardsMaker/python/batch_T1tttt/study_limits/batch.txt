@@ -1,7 +1,0 @@
-./study_limits.py -s signalScan/signal_1500_200.txt -o prod
-./study_limits.py -s signalScan/signal_1400_900.txt -o prod
-./study_limits.py -s signalScan/signal_1200_800.txt -o prod
-./study_limits.py -s signalScan/signal_1000_500.txt -o prod
-./study_limits.py -s signalScan/signal_1500_0.txt -o prod
-./study_limits.py -s signalScan/signal_1100_0.txt -o prod
-./study_limits.py -s signalScan/signal_1100_200.txt -o prod

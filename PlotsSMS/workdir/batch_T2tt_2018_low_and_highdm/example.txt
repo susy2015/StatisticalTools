@@ -1,0 +1,4 @@
+rm -rf results_T2tt
+unlink ori_combined_plots_T2tt
+ln -s /uscms_data/d3/huiwang/CMSSW_8_1_0/src/StatisticalTools/CombCardsMaker/python/batch_T2tt_2018_low_and_highdm/cards_for_plotting ori_combined_plots_T2tt
+./plot_SMS T2tt 1.00 adjT2tt
