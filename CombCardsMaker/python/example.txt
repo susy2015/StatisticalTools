@@ -1,6 +1,7 @@
-cp -r /uscms_data/d3/huiwang/CMSSW_9_4_4/src/SusyAnaTools/Tools/datacards/signal_T1tttt_highdm signalCards
+cp -r /uscms_data/d3/huiwang/CMSSW_10_2_9/src/SusyAnaTools/Tools/datacards/signal_T2tt_2016_v2p7 signalCards
 
-cp /uscms_data/d3/huiwang/CMSSW_9_4_4/src/SusyAnaTools/Tools/datacards/T1tttt_mGluino2000_mLSP100_highdm/*.txt .
+cp /uscms_data/d3/huiwang/CMSSW_10_2_9/src/SusyAnaTools/Tools/datacards/T1tttt_mGluino2000_mLSP100_highdm/*.txt .
+cp /uscms_data/d3/huiwang/CMSSW_10_2_9/src/SusyAnaTools/Tools/datacards/Signal_T2tt_mStop1000_mLSP50_fastsim_2016_v2p7/*.txt .
 
 ln -s ../new_onlyMakeCards.py .
 

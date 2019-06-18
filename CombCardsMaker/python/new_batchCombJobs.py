@@ -6,6 +6,8 @@ import math
 import ROOT
 from optparse import OptionParser # Command line parsing
 
+from rm_bins import rm_bins
+
 import new_combCardPerChannel as combCard
 
 def main():
@@ -100,8 +102,10 @@ request_memory = 4000
          make_allComb_command = "combineCards.py "
          for card_name in os.listdir(outputdir):
             if not ("comb" in card_name): continue
-            make_allComb_command += (outputdir + "/" + card_name + " ")
             rm_comb_cards_command += (outputdir + "/" + card_name + " ")
+	    bin_number = int(card_name.split('_ch')[1].replace('.txt','')) - 1
+	    #if (bin_number in rm_bins): continue
+            make_allComb_command += (outputdir + "/" + card_name + " ")
          make_allComb_command += (" > " + outputdir + "/allComb_"+tmp_signal_name)
          os.system(make_allComb_command)
          os.system(rm_comb_cards_command)
@@ -127,10 +131,10 @@ export CMSSW_Version=`echo $2 | awk -F / '{for (i=1;i<=NF;i++) if ($i ~ /^CMSSW_
 scramv1 project CMSSW $CMSSW_Version
 cd ${CMSSW_Version}/src
 eval `scramv1 runtime -sh`
-git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+git clone --branch 81x-root606 https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 cd HiggsAnalysis/CombinedLimit
 git fetch origin
-git checkout v7.0.10
+git checkout v7.0.9
 scramv1 b clean
 scramv1 b
 eval `scramv1 runtime -sh`
@@ -139,7 +143,7 @@ eval `scramv1 runtime -sh`
 cd ${_CONDOR_SCRATCH_DIR}
 
 tar -zxvf """ + tarfilename + """
-
+ulimit -s unlimited
 combine -M Asymptotic $1 > $3
 
 """

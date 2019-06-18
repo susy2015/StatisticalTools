@@ -1,8 +1,0 @@
-rm -rf results_T1tttt
-unlink ori_combined_plots_T1tttt
-ln -s /uscms_data/d3/huiwang/CMSSW_8_1_0/src/StatisticalTools/CombCardsMaker/python/batch_T1tttt_2018_highdm/cards_for_plotting ori_combined_plots_T1tttt
-./interpolate.py -i ori_combined_plots_T1tttt
-cd ori_combined_plots_T1tttt
-ls *.dat > filelist.txt
-cd -
-./plot_SMS T1tttt 1.00

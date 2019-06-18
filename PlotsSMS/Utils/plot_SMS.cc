@@ -107,12 +107,12 @@ int plot(int argc, char** argv)
    TFile *xSecProspinoFile = new TFile("reference_xSec.root");
    if( topoStr == "T1" || topoStr == "T1qqqq" || topoStr == "T5ZZInc" || topoStr == "T1tttt" || topoStr == "T1ttbb" || topoStr == "T1bbbb" || topoStr == "T5ttcc" || topoStr == "T5ttttDM175" || topoStr == "T5tttt_degen" ) xSecProspino_T1 = (TH1D*) xSecProspinoFile->Get("gluino_xsection");
    if( topoStr == "T2" || topoStr == "T2qq" ) xSecProspino_T2 = (TH1D*) xSecProspinoFile->Get("squark_xsection");
-   if( topoStr == "T2tt" || topoStr == "T2bb" || topoStr == "T2tb" || topoStr == "T6ttWW" ){
+   if( topoStr == "T2tt" || topoStr == "T2bb" || topoStr == "T2tb" || topoStr == "T6ttWW" || topoStr == "T2fbd"){
       xSecProspino_stop = (TH1D*) xSecProspinoFile->Get("stop_xsection");
    }
    if( topoStr == "T1" || topoStr == "T1qqqq" || topoStr == "T5ZZInc" || topoStr == "T1tttt" || topoStr == "T1ttbb" || topoStr == "T1bbbb" || topoStr == "T5ttcc" || topoStr == "T5ttttDM175" || topoStr == "T5tttt_degen" ) xSecProspino = (TH1D*)xSecProspino_T1->Clone();
    if( topoStr == "T2" || topoStr == "T2qq" ) xSecProspino = (TH1D*)xSecProspino_T2->Clone();
-   if( topoStr == "T2tt" || topoStr == "T2bb" || topoStr == "T2tb" || topoStr == "T6ttWW" ) xSecProspino = (TH1D*)xSecProspino_stop->Clone();
+   if( topoStr == "T2tt" || topoStr == "T2bb" || topoStr == "T2tb" || topoStr == "T6ttWW" || topoStr == "T2fbd") xSecProspino = (TH1D*)xSecProspino_stop->Clone();
    if( topoStr == "TGQ" ) xSecProspino = (TH1D*)xSecProspino_T2->Clone();
 
    for(int ib=0; ib<xSecProspino->GetNbinsX()+1; ib++){
@@ -122,9 +122,27 @@ int plot(int argc, char** argv)
 
 // 25 GeV per X bin; 25 GeV per Y bin
    if( topoStr == "T2tt" || topoStr == "T2tb" ){
-      nXbins = 47; nYbins = 34;
-      loX =  87.5; hiX = 1262.5;
-      loY = -12.5; hiY = 837.5;
+      nXbins = 80; nYbins = 40;
+      loX =  0; hiX = 2000;
+      loY = 0; hiY = 1000;
+ 
+      nXbinsLG = 47; nYbinsLG = 34;
+      loXLG =  87.5; hiXLG = 1262.5;
+      loYLG = -12.5; hiYLG = 837.5;
+   }
+   if( topoStr == "T2fbd"){
+      nXbins = 80; nYbins = 40;
+      loX =  0; hiX = 2000;
+      loY = 0; hiY = 1000;
+ 
+      nXbinsLG = 47; nYbinsLG = 34;
+      loXLG =  87.5; hiXLG = 1262.5;
+      loYLG = -12.5; hiYLG = 837.5;
+   }
+   if( topoStr == "T1tttt"){
+      nXbins = 120; nYbins = 80;
+      loX =  0; hiX = 3000;
+      loY = 0; hiY = 2000;
  
       nXbinsLG = 47; nYbinsLG = 34;
       loXLG =  87.5; hiXLG = 1262.5;
@@ -314,6 +332,9 @@ int plot(int argc, char** argv)
          }else if( topoStr == "T2tt" ){
             hobslimit = new TH2F("obslimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hobslimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
+         }else if( topoStr == "T2fbd" ){
+            hobslimit = new TH2F("obslimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hobslimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
          }else if( topoStr == "T2bb" ){
             hobslimit = new TH2F("obslimit",";m(#tilde{b}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hobslimit->SetTitle("pp#rightarrow#tilde{b}#tilde{b}, #tilde{b}#rightarrow b#tilde{#chi}^{0}#; m(#tilde{b})>m(#tilde{#chi}^{0})");
@@ -357,7 +378,7 @@ int plot(int argc, char** argv)
             hobslimit = rebin(hobslimit);
          }
 
-         hobslimit->SetMinimum(0.001);
+         hobslimit->SetMinimum(0.0001);
          hobslimit->SetMaximum(20);
          hobslimit->Draw("colz");
          TString obsHistName = region[i]+"obsLimit";
@@ -399,6 +420,9 @@ int plot(int argc, char** argv)
             hexplimit = new TH2F("explimit",";m(#tilde{q}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hexplimit->SetTitle("pp#rightarrow#tilde{q}#tilde{q}, #tilde{q}#rightarrow q#tilde{#chi}^{0}#; m(#tilde{g})>>m(#tilde{q})");
          }else if( topoStr == "T2tt" ){
+            hexplimit = new TH2F("explimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+            hexplimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
+         }else if( topoStr == "T2fbd" ){
             hexplimit = new TH2F("explimit",";m(#tilde{t}) [GeV]; m(#tilde{#chi}^{0}) [GeV]; 95% CL Upper Limit on #sigma [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
             hexplimit->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
          }else if( topoStr == "T2bb" ){
@@ -445,23 +469,24 @@ int plot(int argc, char** argv)
          }
 
 	 hexplimit->SetTitle("");
-         hexplimit->SetMinimum(0.001);
-         hexplimit->SetMaximum(20);
-	 hexplimit->GetXaxis()->SetRangeUser(0,1200);
+	 hexplimit->GetXaxis()->SetRangeUser(150,1500);
 	 hexplimit->GetYaxis()->SetRangeUser(20,800);
 	 hexplimit->GetXaxis()->SetTitle("mStop [GeV]");
 	 hexplimit->GetXaxis()->SetTitleSize(0.045);;
 	 hexplimit->GetYaxis()->SetTitle("mLSP [GeV]");
 	 hexplimit->GetYaxis()->SetTitleSize(0.045);;
+	 hexplimit->GetXaxis()->SetLabelSize(0.04);
 	 hexplimit->GetXaxis()->SetNdivisions(510);
 	 if( topoStr == "T1tttt" )
          {
-		hexplimit->SetMinimum(0.0001);
-         	hexplimit->SetMaximum(2);
-		hexplimit->GetXaxis()->SetRangeUser(600,2200);
+		hexplimit->GetXaxis()->SetRangeUser(600,2500);
 		hexplimit->GetYaxis()->SetRangeUser(20,1800);
 		hexplimit->GetXaxis()->SetTitle("mGluino [GeV]");
-		hexplimit->GetXaxis()->SetLabelSize(0.04);
+	 }
+	 if( topoStr == "T2fbd" )
+         {
+		hexplimit->GetXaxis()->SetRangeUser(200,800);
+		hexplimit->GetYaxis()->SetRangeUser(100,600);
 	 }
 
          hexplimit->Draw("colz");
@@ -620,7 +645,7 @@ int plot(int argc, char** argv)
          }
 
          obslimitVec[i] = (TH2F*) minObsExclNLOcloned->Clone(obsHistName.Data());
-         obslimitVec[i]->SetMinimum(0.001);
+         obslimitVec[i]->SetMinimum(0.0001);
          obslimitVec[i]->SetMaximum(20);
 
          TH2F * obsExclOneTimesxSecProspinoTest = 0;
@@ -948,7 +973,7 @@ int plot(int argc, char** argv)
          obsHistName = region[i]+"obsExclMinusSysErrProspino_base"; obsExclMinusSysErrProspino_baseVec[i] = (TGraph*) obsExclMinusSysErrxSecProspino_base->Clone(obsHistName.Data());
          obsHistName = region[i]+"obsExclMinusSysErrProspino_extra"; obsExclMinusSysErrProspino_extraVec[i] = (TGraph*) obsExclMinusSysErrxSecProspino_extra->Clone(obsHistName.Data());
 
-         minObsExclNLOcloned->SetMinimum(0.001);
+         minObsExclNLOcloned->SetMinimum(0.0001);
          minObsExclNLOcloned->SetMaximum(20);
          minObsExclNLOcloned->Draw("colz");
          diagonalGraph->Draw("l");
@@ -1011,7 +1036,7 @@ int plot(int argc, char** argv)
 
          explimitVec[i] = (TH2F*) minExpExclNLOcloned->Clone(expHistName.Data());
 
-         explimitVec[i]->SetMinimum(0.001);
+         explimitVec[i]->SetMinimum(0.0001);
          explimitVec[i]->SetMaximum(20);
 
          TH2F * expExclOneTimesxSecProspinoTest = 0;
@@ -1305,7 +1330,7 @@ int plot(int argc, char** argv)
          expHistName = region[i]+"expExclMinusOneSigmaProspino_base"; expExclMinusOneSigmaProspino_baseVec[i] = (TGraph*) expExclMinusOneSigmaProspino_base->Clone(expHistName.Data());
          expHistName = region[i]+"expExclMinusOneSigmaProspino_extra"; expExclMinusOneSigmaProspino_extraVec[i] = (TGraph*) expExclMinusOneSigmaProspino_extra->Clone(expHistName.Data());
 
-         minExpExclNLOcloned->SetMinimum(0.001);
+         minExpExclNLOcloned->SetMinimum(0.0001);
          minExpExclNLOcloned->SetMaximum(20);
 	 if( topoStr == "T1tttt" )
          {
@@ -1354,6 +1379,9 @@ int plot(int argc, char** argv)
       hexcl = new TH2F("hexcl",";m_{#tilde{q}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
       hexcl->SetTitle("pp#rightarrow#tilde{q}#tilde{q}, #tilde{q}#rightarrow q#tilde{#chi}^{0}#; m(#tilde{g})>>m(#tilde{q})");
    }else if( topoStr == "T2tt" ){
+      hexcl = new TH2F("hexcl",";m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
+      hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
+   }else if( topoStr == "T2fbd" ){
       hexcl = new TH2F("hexcl",";m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Observed Limit [pb]", nXbins, loX, hiX, nYbins, loY, hiY);
       hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0})");
    }else if( topoStr == "T2tb" ){
@@ -1432,6 +1460,8 @@ int plot(int argc, char** argv)
    }else if( topoStr == "T2" || topoStr == "T2qq" ){
       hexcl->SetTitle("pp#rightarrow#tilde{q}#tilde{q}, #tilde{q}#rightarrow q#tilde{#chi}^{0}#; m(#tilde{g})>>m(#tilde{q});m_{#tilde{q}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
    }else if( topoStr == "T2tt" ){
+      hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0});m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
+   }else if( topoStr == "T2fbd" ){
       hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; m(#tilde{t})>m(#tilde{#chi}^{0});m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
    }else if( topoStr == "T2tb" ){
       hexcl->SetTitle("pp#rightarrow#tilde{t}#tilde{t}, #tilde{t}#rightarrow t#tilde{#chi}^{0}#; #tilde{t}#rightarrow b#tilde{#chi}^{#pm}#; m(#tilde{t})>m(#tilde{#chi}^{0});m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}} [GeV]; 95% CL Expected Limit [pb]");
