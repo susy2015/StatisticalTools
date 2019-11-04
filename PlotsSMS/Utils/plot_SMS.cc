@@ -131,8 +131,8 @@ int plot(int argc, char** argv)
       loYLG = -12.5; hiYLG = 837.5;
    }
    if( topoStr == "T2fbd"){
-      nXbins = 80; nYbins = 40;
-      loX =  0; hiX = 2000;
+      nXbins = 40; nYbins = 40;
+      loX =  0; hiX = 1000;
       loY = 0; hiY = 1000;
  
       nXbinsLG = 47; nYbinsLG = 34;
@@ -485,8 +485,8 @@ int plot(int argc, char** argv)
 	 }
 	 if( topoStr == "T2fbd" )
          {
-		hexplimit->GetXaxis()->SetRangeUser(200,800);
-		hexplimit->GetYaxis()->SetRangeUser(100,600);
+		hexplimit->GetXaxis()->SetRangeUser(300,1000);
+		hexplimit->GetYaxis()->SetRangeUser(200,1000);
 	 }
 
          hexplimit->Draw("colz");
@@ -1332,11 +1332,8 @@ int plot(int argc, char** argv)
 
          minExpExclNLOcloned->SetMinimum(0.0001);
          minExpExclNLOcloned->SetMaximum(20);
-	 if( topoStr == "T1tttt" )
-         {
-         minExpExclNLOcloned->SetMinimum(0.0001);
-         minExpExclNLOcloned->SetMaximum(2);
-	 }
+	 if( topoStr == "T1tttt" ) minExpExclNLOcloned->SetMaximum(2);
+         if( topoStr == "T2fbd" ) minExpExclNLOcloned->SetMinimum(0.01);
 
          minExpExclNLOcloned->Draw("colz");
          diagonalGraph->Draw("l");

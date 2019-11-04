@@ -61,7 +61,7 @@ Output = logs/basicCheck_$(Process).stdout
 Error = logs/basicCheck_$(Process).stderr
 Log = logs/basicCheck_$(Process).log
 notify_user = ${LOGNAME}@FNAL.GOV
-request_memory = 4000
+request_memory = 8000
 
 """
    fileParts = [submitLine]

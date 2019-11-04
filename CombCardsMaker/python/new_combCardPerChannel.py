@@ -127,7 +127,7 @@ def prodCardPerChn(signal_key, outputdir='', comb_comb_file = 'comb_comb.txt', c
 
    doExpLimitOnly = False
 
-   lnU_rate_for_ZERO = 0.005
+   lnU_rate_for_ZERO = 0.00001
    lnU_range_for_ZERO = 10.0
    lnU_range = 10.0
 
@@ -286,13 +286,15 @@ bin         bin{:d}\n""".format(num_proc-1, chn))
 
       signal_mapper = all_output_mapper['signal']
       for key, val in signal_mapper.items():
-         if re.match(r'^stat_.*up.*', key):
+         #if re.match(r'^stat_.*up.*', key):
+         if re.match(r'^cs_event', key):
             key = re.sub(r'_up', '', key)
             signal_cs_event = float(signal_mapper['cs_event'][chn-1])
-            signal_contam = float(signal_mapper['contam'][chn-1])
+            #signal_contam = float(signal_mapper['contam'][chn-1])
             signal_avg_weight = float(signal_mapper['avg_weight'][chn-1])
             header_str = 'signal_'+key+'_chn'+str(chn)
-            func_str = 'gmN  {:0.0f}  '.format(signal_cs_event-signal_contam)
+            #func_str = 'gmN  {:0.0f}  '.format(signal_cs_event-signal_contam)
+            func_str = 'gmN  {:0.0f}  '.format(signal_cs_event)
             outfile_perchn.write('{:<{width1}s}{:>{width2}s}'.format(header_str, func_str, width1=header_width, width2=func_width)+pre_hyphen+'{:<{width}.5f}'.format(signal_avg_weight, width=item_width)+'  '+aft_hyphen+'\n')
          if re.match(r'^syst_.*up.*', key):
             if 'pdfUnc' in key:
@@ -364,7 +366,8 @@ bin         bin_ttbarW_muCS_ch{:d}\n""".format(num_ttbarW_muCS_proc-1, chn))
       muCS_rate = float(comb_mu_mapper['rate'][chn-1])
       muCS_tf = float(comb_mu_mapper['fin_TF_to_mu'][chn-1])
       muCS_num = int(muCS_rate/muCS_tf)
-      muCS_signal_rate = 0.0001
+      muCS_signal_rate = float(signal_mapper['contam_muCS'][chn-1])
+      if(muCS_signal_rate==0): muCS_signal_rate = 0.0001
 
       ttbarW_muCS_perchn.write('observation {:d}\n'.format(muCS_num))
       ttbarW_muCS_perchn.write('{:<{width}s}'.format('bin', width=total_label_width)+'{:<{width}s}'.format('bin_ttbarW_muCS_ch'+str(chn), width = item_width*2+2)*num_ttbarW_muCS_proc+'\n')
@@ -408,7 +411,8 @@ bin         bin_ttbarW_eleCS_ch{:d}\n""".format(num_ttbarW_eleCS_proc-1, chn))
       eleCS_rate = float(comb_ele_mapper['rate'][chn-1])
       eleCS_tf = float(comb_ele_mapper['fin_TF_to_ele'][chn-1])
       eleCS_num = int(eleCS_rate/eleCS_tf)
-      eleCS_signal_rate = 0.0001
+      eleCS_signal_rate = float(signal_mapper['contam_eleCS'][chn-1])
+      if(eleCS_signal_rate==0): eleCS_signal_rate = 0.0001
 
       ttbarW_eleCS_perchn.write('observation {:d}\n'.format(eleCS_num))
       ttbarW_eleCS_perchn.write('{:<{width}s}'.format('bin', width=total_label_width)+'{:<{width}s}'.format('bin_ttbarW_eleCS_ch'+str(chn), width = item_width*2+2)*num_ttbarW_eleCS_proc+'\n')
